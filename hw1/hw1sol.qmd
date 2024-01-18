@@ -70,7 +70,21 @@ ls -l ~/mimic/
 
 2. Display the contents in the folders `hosp` and `icu` using Bash command `ls -l`. Why are these data files distributed as `.csv.gz` files instead of `.csv` (comma separated values) files? Read the page <https://mimic.mit.edu/docs/iv/> to understand what's in each folder.
 
+**Answer** The data files are distributed as `.csv.gz` files instead of `.csv` files because the `.csv.gz` files are compressed and take up less space. And use less internet  bandwidth. The `hosp` folder contains hospital admission data and the `icu` folder contains ICU admission data.
+
+This is the content of the `hosp` folder
+```{bash}
+ls -l ~/mimic/hosp
+```
+This is the content of the `icu` folder
+```{bash}
+ls -l ~/mimic/icu
+```
+
+
 3. Briefly describe what Bash commands `zcat`, `zless`, `zmore`, and `zgrep` do.
+
+**Answer** `zcat` is used to display the contents of a compressed file. `zless` is used to display the contents of a compressed file one page at a time. `zmore` is used to display the contents of a compressed file one page at a time. `zgrep` is used to search for a pattern in a compressed file.
 
 4. (Looping in Bash) What's the output of the following bash script?
 ```{bash}
