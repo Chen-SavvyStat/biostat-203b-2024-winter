@@ -161,13 +161,13 @@ zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $13}' | sort 
 echo "Size of labevents.csv.gz:"
 ls -lh ~/mimic/hosp/labevents.csv.gz
 echo "Decompressing labevents.csv.gz..."
-echo '123456' | sudo -S gzip -dk ~/mimic/hosp/labevents.csv.gz
+echo '123456' | sudo -S gzip -dc ~/mimic/hosp/labevents.csv.gz > ~/labevents.csv
 echo "Size of labevents.csv:"
-ls -lh ~/mimic/hosp/labevents.csv
+ls -lh ~/labevents.csv
 echo "Run time of zcat < ~/mimic/labevents.csv.gz | wc -l:"
 time zcat < ~/mimic/hosp/labevents.csv.gz | wc -l
 echo "Run time of wc -l labevents.csv:"
-time wc -l ~/mimic/hosp/labevents.csv
+time wc -l ~/labevents.csv
 ```
 
 ## Q4. Who's popular in Price and Prejudice
@@ -176,6 +176,10 @@ time wc -l ~/mimic/hosp/labevents.csv
 ```{bash}
 #| eval: false
 wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+```
+**Answer**
+```{bash}
+wget -nc -P /home/aaptx4869/203b-hw http://www.gutenberg.org/cache/epub/42671/pg42671.txt
 ```
 Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.
 ```{bash}
@@ -188,6 +192,16 @@ do
 done
 ```
 
+**Answer**
+wget -nc downloads the file only if it doesn't exist in the directory.
+```{bash}
+for char in Elizabeth Jane Lydia Darcy
+do
+  echo $char:
+  grep -o -i "$char" pg42671.txt | wc -l
+done
+```
+
 2. What's the difference between the following two commands?
 ```{bash}
 #| eval: false
@@ -196,6 +210,12 @@ echo 'hello, world' > test1.txt
 and
 ```{bash}
 #| eval: false
+echo 'hello, world' >> test2.txt
+```
+
+**Answer** The first command overwrites the file if it already exists. The second command appends the text to the file if it already exists.
+```{bash}
+echo 'hello, world' > test1.txt
 echo 'hello, world' >> test2.txt
 ```
 
@@ -212,6 +232,13 @@ Using `chmod` to make the file executable by the owner, and run
 ./middle.sh pg42671.txt 20 5
 ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
+
+**Answer**
+```{bash}
+cd /home/aaptx4869/203b-hw
+chmod u+x middle.sh
+./middle.sh pg42671.txt 20 5
+```
 
 ## Q5. More fun with Linux
 

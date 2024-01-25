@@ -3135,7 +3135,7 @@ loaded via a namespace (and not attached):
 -rwxrwxrwx 1 root root 13332 Jan  5  2023 CHANGELOG.txt
 -rwxrwxrwx 1 root root  2518 Jan  5  2023 LICENSE.txt
 -rwxrwxrwx 1 root root  2884 Jan  6  2023 SHA256SUMS.txt
-drwxrwxrwx 1 root root  4096 Jan 23 19:03 hosp
+drwxrwxrwx 1 root root  4096 Jan 25 13:45 hosp
 drwxrwxrwx 1 root root  4096 Jan 14 18:50 icu</code></pre>
 </div>
 </div>
@@ -3147,30 +3147,29 @@ drwxrwxrwx 1 root root  4096 Jan 14 18:50 icu</code></pre>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-l</span> ~/mimic/hosp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>total 17838164
--rwxrwxrwx 1 root root    15516088 Jan  5  2023 admissions.csv.gz
--rwxrwxrwx 1 root root      427468 Jan  5  2023 d_hcpcs.csv.gz
--rwxrwxrwx 1 root root      859438 Jan  5  2023 d_icd_diagnoses.csv.gz
--rwxrwxrwx 1 root root      578517 Jan  5  2023 d_icd_procedures.csv.gz
--rwxrwxrwx 1 root root       12900 Jan  5  2023 d_labitems.csv.gz
--rwxrwxrwx 1 root root    25070720 Jan  5  2023 diagnoses_icd.csv.gz
--rwxrwxrwx 1 root root     7426955 Jan  5  2023 drgcodes.csv.gz
--rwxrwxrwx 1 root root   508524623 Jan  5  2023 emar.csv.gz
--rwxrwxrwx 1 root root   471096030 Jan  5  2023 emar_detail.csv.gz
--rwxrwxrwx 1 root root     1767138 Jan  5  2023 hcpcsevents.csv.gz
--rwxrwxrwx 1 root root 13730083993 Jan  5  2023 labevents.csv
--rwxrwxrwx 1 root root  1939088924 Jan  5  2023 labevents.csv.gz
--rwxrwxrwx 1 root root    96698496 Jan  5  2023 microbiologyevents.csv.gz
--rwxrwxrwx 1 root root    36124944 Jan  5  2023 omr.csv.gz
--rwxrwxrwx 1 root root     2312631 Jan  5  2023 patients.csv.gz
--rwxrwxrwx 1 root root   398753125 Jan  5  2023 pharmacy.csv.gz
--rwxrwxrwx 1 root root   498505135 Jan  5  2023 poe.csv.gz
--rwxrwxrwx 1 root root    25477219 Jan  5  2023 poe_detail.csv.gz
--rwxrwxrwx 1 root root   458817415 Jan  5  2023 prescriptions.csv.gz
--rwxrwxrwx 1 root root     6027067 Jan  5  2023 procedures_icd.csv.gz
--rwxrwxrwx 1 root root      122507 Jan  5  2023 provider.csv.gz
--rwxrwxrwx 1 root root     6781247 Jan  5  2023 services.csv.gz
--rwxrwxrwx 1 root root    36158338 Jan  5  2023 transfers.csv.gz</code></pre>
+<pre><code>total 4429876
+-rwxrwxrwx 1 root root   15516088 Jan  5  2023 admissions.csv.gz
+-rwxrwxrwx 1 root root     427468 Jan  5  2023 d_hcpcs.csv.gz
+-rwxrwxrwx 1 root root     859438 Jan  5  2023 d_icd_diagnoses.csv.gz
+-rwxrwxrwx 1 root root     578517 Jan  5  2023 d_icd_procedures.csv.gz
+-rwxrwxrwx 1 root root      12900 Jan  5  2023 d_labitems.csv.gz
+-rwxrwxrwx 1 root root   25070720 Jan  5  2023 diagnoses_icd.csv.gz
+-rwxrwxrwx 1 root root    7426955 Jan  5  2023 drgcodes.csv.gz
+-rwxrwxrwx 1 root root  508524623 Jan  5  2023 emar.csv.gz
+-rwxrwxrwx 1 root root  471096030 Jan  5  2023 emar_detail.csv.gz
+-rwxrwxrwx 1 root root    1767138 Jan  5  2023 hcpcsevents.csv.gz
+-rwxrwxrwx 1 root root 1939088924 Jan  5  2023 labevents.csv.gz
+-rwxrwxrwx 1 root root   96698496 Jan  5  2023 microbiologyevents.csv.gz
+-rwxrwxrwx 1 root root   36124944 Jan  5  2023 omr.csv.gz
+-rwxrwxrwx 1 root root    2312631 Jan  5  2023 patients.csv.gz
+-rwxrwxrwx 1 root root  398753125 Jan  5  2023 pharmacy.csv.gz
+-rwxrwxrwx 1 root root  498505135 Jan  5  2023 poe.csv.gz
+-rwxrwxrwx 1 root root   25477219 Jan  5  2023 poe_detail.csv.gz
+-rwxrwxrwx 1 root root  458817415 Jan  5  2023 prescriptions.csv.gz
+-rwxrwxrwx 1 root root    6027067 Jan  5  2023 procedures_icd.csv.gz
+-rwxrwxrwx 1 root root     122507 Jan  5  2023 provider.csv.gz
+-rwxrwxrwx 1 root root    6781247 Jan  5  2023 services.csv.gz
+-rwxrwxrwx 1 root root   36158338 Jan  5  2023 transfers.csv.gz</code></pre>
 </div>
 </div>
 <p>This is the content of the <code>icu</code> folder</p>
@@ -3403,32 +3402,31 @@ Count for each unique value of ethnicity:
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Size of labevents.csv.gz:&quot;</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> ~/mimic/hosp/labevents.csv.gz</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Decompressing labevents.csv.gz...&quot;</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;123456&#39;</span> <span class="kw">|</span> <span class="fu">sudo</span> <span class="at">-S</span> gzip <span class="at">-dk</span> ~/mimic/hosp/labevents.csv.gz</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;123456&#39;</span> <span class="kw">|</span> <span class="fu">sudo</span> <span class="at">-S</span> gzip <span class="at">-dc</span> ~/mimic/hosp/labevents.csv.gz <span class="op">&gt;</span> ~/labevents.csv</span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Size of labevents.csv:&quot;</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> ~/mimic/hosp/labevents.csv</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> ~/labevents.csv</span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Run time of zcat &lt; ~/mimic/labevents.csv.gz | wc -l:&quot;</span></span>
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="bu">time</span> zcat <span class="op">&lt;</span> ~/mimic/hosp/labevents.csv.gz <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
 <span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Run time of wc -l labevents.csv:&quot;</span></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="bu">time</span> wc <span class="at">-l</span> ~/mimic/hosp/labevents.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="bu">time</span> wc <span class="at">-l</span> ~/labevents.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Size of labevents.csv.gz:
 -rwxrwxrwx 1 root root 1.9G Jan  5  2023 /home/aaptx4869/mimic/hosp/labevents.csv.gz
 Decompressing labevents.csv.gz...
-[sudo] password for aaptx4869: gzip: /home/aaptx4869/mimic/hosp/labevents.csv already exists;   not overwritten
-Size of labevents.csv:
--rwxrwxrwx 1 root root 13G Jan  5  2023 /home/aaptx4869/mimic/hosp/labevents.csv
+[sudo] password for aaptx4869: Size of labevents.csv:
+-rw-r--r-- 1 aaptx4869 aaptx4869 13G Jan 25 14:53 /home/aaptx4869/labevents.csv
 Run time of zcat &lt; ~/mimic/labevents.csv.gz | wc -l:
 118171368
 
-real    0m47.366s
-user    0m38.991s
-sys 0m10.007s
+real    0m47.158s
+user    0m38.870s
+sys 0m9.809s
 Run time of wc -l labevents.csv:
-118171368 /home/aaptx4869/mimic/hosp/labevents.csv
+118171368 /home/aaptx4869/labevents.csv
 
-real    1m8.300s
-user    0m1.376s
-sys 0m7.984s</code></pre>
+real    0m7.092s
+user    0m1.136s
+sys 0m4.346s</code></pre>
 </div>
 </div>
 </section>
@@ -3440,39 +3438,82 @@ sys 0m7.984s</code></pre>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><strong>Answer</strong></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> <span class="at">-P</span> /home/aaptx4869/203b-hw http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>File ‘/home/aaptx4869/203b-hw/pg42671.txt’ already there; not retrieving.</code></pre>
+</div>
+</div>
 <p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> char <span class="kw">in</span> Elizabeth Jane Lydia Darcy</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="cf">do</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="va">$char</span>:</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># some bash commands here</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> char <span class="kw">in</span> Elizabeth Jane Lydia Darcy</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">do</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="va">$char</span>:</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># some bash commands here</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Answer</strong> wget -nc downloads the file only if it doesn’t exist in the directory.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> char <span class="kw">in</span> Elizabeth Jane Lydia Darcy</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">do</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="va">$char</span>:</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span> <span class="at">-o</span> <span class="at">-i</span> <span class="st">&quot;</span><span class="va">$char</span><span class="st">&quot;</span> pg42671.txt <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Elizabeth:
+634
+Jane:
+293
+Lydia:
+171
+Darcy:
+418</code></pre>
+</div>
 </div>
 <ol start="2" type="1">
 <li>What’s the difference between the following two commands?</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;</span> test1.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;</span> test1.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>and</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;&gt;</span> test2.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;&gt;</span> test2.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Answer</strong> The first command overwrites the file if it already exists. The second command appends the text to the file if it already exists.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;</span> test1.txt</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;hello, world&#39;</span> <span class="op">&gt;&gt;</span> test2.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ol start="3" type="1">
 <li>Using your favorite text editor (e.g., <code>vi</code>), type the following and save the file as <code>middle.sh</code>:</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/sh</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Select lines from the middle of a file.</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage: bash middle.sh filename end_line num_lines</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$3</span><span class="st">&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/sh</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Select lines from the middle of a file.</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage: bash middle.sh filename end_line num_lines</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$3</span><span class="st">&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Using <code>chmod</code> to make the file executable by the owner, and run</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./middle.sh</span> pg42671.txt 20 5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./middle.sh</span> pg42671.txt 20 5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p>
+<p><strong>Answer</strong></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /home/aaptx4869/203b-hw</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> u+x middle.sh</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./middle.sh</span> pg42671.txt 20 5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Editor: R. W. Chapman
+
+Release date: May 9, 2013 [eBook #42671]
+
+Language: English</code></pre>
+</div>
+</div>
 </section>
 <section id="q5.-more-fun-with-linux" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-more-fun-with-linux">Q5. More fun with Linux</h2>
