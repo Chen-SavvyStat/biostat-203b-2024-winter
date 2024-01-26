@@ -3414,19 +3414,19 @@ Count for each unique value of ethnicity:
 -rwxrwxrwx 1 root root 1.9G Jan  5  2023 /home/aaptx4869/mimic/hosp/labevents.csv.gz
 Decompressing labevents.csv.gz...
 [sudo] password for aaptx4869: Size of labevents.csv:
--rw-r--r-- 1 aaptx4869 aaptx4869 13G Jan 25 20:45 /home/aaptx4869/labevents.csv
+-rw-r--r-- 1 aaptx4869 aaptx4869 13G Jan 25 21:01 /home/aaptx4869/labevents.csv
 Run time of zcat &lt; ~/mimic/labevents.csv.gz | wc -l:
 118171368
 
-real    0m47.485s
-user    0m39.904s
-sys 0m9.259s
+real    0m47.161s
+user    0m39.121s
+sys 0m9.761s
 Run time of wc -l labevents.csv:
 118171368 /home/aaptx4869/labevents.csv
 
-real    0m1.832s
-user    0m0.910s
-sys 0m0.911s</code></pre>
+real    0m3.560s
+user    0m0.839s
+sys 0m2.707s</code></pre>
 </div>
 </div>
 <p>The size of labevents.csv.gz is 1.9G. The size of labevents.csv is 13G. The run time of the gz file is 47 secs and the run time for the csv file is 4.5 seconds. The trade off between storage and speed for big data files is that compressed files take up less space but take longer to process. Uncompressed files take up more space but take less time to process.</p>
@@ -3441,9 +3441,9 @@ sys 0m0.911s</code></pre>
 </div>
 <p><strong>Answer</strong></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> <span class="at">-P</span> /home/aaptx4869/203b-hw http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-nc</span> http://www.gutenberg.org/cache/epub/42671/pg42671.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>File ‘/home/aaptx4869/203b-hw/pg42671.txt’ already there; not retrieving.</code></pre>
+<pre><code>File ‘pg42671.txt’ already there; not retrieving.</code></pre>
 </div>
 </div>
 <p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
@@ -3589,13 +3589,13 @@ Su Mo Tu We Th Fr Sa
                       
                       
                       
-Thu Jan 25 20:46:36 PST 2024
+Thu Jan 25 21:02:07 PST 2024
 NioInc
 x86_64
 Linux NioInc 5.15.133.1-microsoft-standard-WSL2 #1 SMP Thu Oct 5 21:02:42 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
- 20:46:36 up 23:54,  1 user,  load average: 1.05, 0.54, 0.27
+ 21:02:07 up 1 day, 9 min,  1 user,  load average: 0.92, 0.42, 0.23
 root     pts/1        2024-01-23 17:50
- 20:46:36 up 23:54,  1 user,  load average: 1.05, 0.54, 0.27
+ 21:02:07 up 1 day, 9 min,  1 user,  load average: 0.92, 0.42, 0.23
 USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
 root     pts/1    -                Tue17    2days  0.00s  0.00s -bash
 uid=1001(aaptx4869) gid=1002(aaptx4869) groups=1002(aaptx4869),27(sudo)
@@ -3611,7 +3611,7 @@ root     pts/1                         Tue Jan 16 14:05 - crash (3+01:56)
 reboot   system boot  5.15.133.1-micro Tue Jan 16 14:05   still running
 consents consented confers confered presents presented prefers prefered
 
-real    0m5.001s
+real    0m5.002s
 user    0m0.001s
 sys 0m0.000s</code></pre>
 </div>

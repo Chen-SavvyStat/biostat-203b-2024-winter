@@ -180,7 +180,7 @@ wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
 ```
 **Answer**
 ```{bash}
-wget -nc -P /home/aaptx4869/203b-hw http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
 ```
 Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.
 ```{bash}
