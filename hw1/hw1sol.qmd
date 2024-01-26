@@ -236,8 +236,8 @@ Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this sh
 
 **Answer**
 ```{bash}
-chmod u+x ../middle.sh
-../middle.sh pg42671.txt 20 5
+chmod u+x middle.sh
+./middle.sh pg42671.txt 20 5
 ```
 The output is the 5 lines starting from line 20 of the file pg42671.txt.
 The meaning of '"$1"' is the first argument passed to the script in my case is the filename (pg42671.txt).The meaning of '"$2"' is the second argument passed to the script which is "20". The meaning of '"$3"' is the third argument passed to the script which is "5". We need the first line of the shell script to tell the computer which shell to use to run the script.

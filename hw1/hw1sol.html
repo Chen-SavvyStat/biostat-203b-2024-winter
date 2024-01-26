@@ -3414,19 +3414,19 @@ Count for each unique value of ethnicity:
 -rwxrwxrwx 1 root root 1.9G Jan  5  2023 /home/aaptx4869/mimic/hosp/labevents.csv.gz
 Decompressing labevents.csv.gz...
 [sudo] password for aaptx4869: Size of labevents.csv:
--rw-r--r-- 1 aaptx4869 aaptx4869 13G Jan 25 20:31 /home/aaptx4869/labevents.csv
+-rw-r--r-- 1 aaptx4869 aaptx4869 13G Jan 25 20:45 /home/aaptx4869/labevents.csv
 Run time of zcat &lt; ~/mimic/labevents.csv.gz | wc -l:
 118171368
 
-real    0m47.215s
-user    0m39.009s
-sys 0m9.849s
+real    0m47.485s
+user    0m39.904s
+sys 0m9.259s
 Run time of wc -l labevents.csv:
 118171368 /home/aaptx4869/labevents.csv
 
-real    0m5.506s
-user    0m0.983s
-sys 0m3.792s</code></pre>
+real    0m1.832s
+user    0m0.910s
+sys 0m0.911s</code></pre>
 </div>
 </div>
 <p>The size of labevents.csv.gz is 1.9G. The size of labevents.csv is 13G. The run time of the gz file is 47 secs and the run time for the csv file is 4.5 seconds. The trade off between storage and speed for big data files is that compressed files take up less space but take longer to process. Uncompressed files take up more space but take less time to process.</p>
@@ -3504,8 +3504,8 @@ Darcy:
 <p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p>
 <p><strong>Answer</strong></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> u+x ../middle.sh</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="ex">../middle.sh</span> pg42671.txt 20 5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> u+x middle.sh</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./middle.sh</span> pg42671.txt 20 5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Editor: R. W. Chapman
 
@@ -3589,13 +3589,13 @@ Su Mo Tu We Th Fr Sa
                       
                       
                       
-Thu Jan 25 20:32:07 PST 2024
+Thu Jan 25 20:46:36 PST 2024
 NioInc
 x86_64
 Linux NioInc 5.15.133.1-microsoft-standard-WSL2 #1 SMP Thu Oct 5 21:02:42 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
- 20:32:07 up 23:39,  1 user,  load average: 0.95, 0.45, 0.20
+ 20:46:36 up 23:54,  1 user,  load average: 1.05, 0.54, 0.27
 root     pts/1        2024-01-23 17:50
- 20:32:07 up 23:39,  1 user,  load average: 0.95, 0.45, 0.20
+ 20:46:36 up 23:54,  1 user,  load average: 1.05, 0.54, 0.27
 USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
 root     pts/1    -                Tue17    2days  0.00s  0.00s -bash
 uid=1001(aaptx4869) gid=1002(aaptx4869) groups=1002(aaptx4869),27(sudo)
@@ -3612,7 +3612,7 @@ reboot   system boot  5.15.133.1-micro Tue Jan 16 14:05   still running
 consents consented confers confered presents presented prefers prefered
 
 real    0m5.001s
-user    0m0.000s
+user    0m0.001s
 sys 0m0.000s</code></pre>
 </div>
 </div>
