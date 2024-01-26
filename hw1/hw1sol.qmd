@@ -27,6 +27,10 @@ Display machine information for reproducibility:
 sessionInfo()
 ```
 
+```{r}
+sessionInfo()
+```
+
 ## Q1. Git/GitHub
 
 **No handwritten homework reports are accepted for this course.** We work with Git and GitHub. Efficient and abundant use of Git, e.g., frequent and well-documented commits, is an important criterion for grading your homework.
@@ -47,7 +51,9 @@ sessionInfo()
 
 This exercise (and later in this course) uses the [MIMIC-IV data v2.2](https://physionet.org/content/mimiciv/2.2/), a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <https://mimic.mit.edu/docs/gettingstarted/> to (1) complete the CITI `Data or Specimens Only Research` course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. **You must complete Q2 before working on the remaining questions.** (Hint: The CITI training takes a few hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)
 
-**Answer** I completed the CITI training on Jan 15, 2024. The completion report is available at <https://www.citiprogram.org/verify/?w=1c2d2b1c-1b1a-4b1c-8b1c-1b1c1b1c1b1c&u=106152237&g=106152237&c=1>. The completion certificate is available at <https://www.citiprogram.org/verify/?w6c489e83-391b-4918-bf93-ee47048dd7a7-60526070>
+**Answer** I completed the CITI training on Jan 15, 2024. The completion report is available at
+<https://www.citiprogram.org/verify/?kcc467b08-66b6-462b-b63f-50043a6fa620-60526070>. 
+The completion certificate is available at <https://www.citiprogram.org/verify/?w6c489e83-391b-4918-bf93-ee47048dd7a7-60526070>
 
 ## Q3. Linux Shell Commands
 
@@ -64,6 +70,12 @@ Refer to the documentation <https://physionet.org/content/mimiciv/2.2/> for deta
   
   **Answer** I downloaded the data files to my local machine. The data files are available at `~/mimic`. The data files are not put into Git. The data files are not copied into my directory. The gz data files are not decompressed. 
   
+```{bash}
+if [ ! -L ~/mimic ]; then
+    ln -s "/mnt/d/jimmy study/203B/MIMIC data" ~/mimic
+fi
+```
+
 ```{bash}
 ls -l ~/mimic/
 ```
@@ -96,17 +108,78 @@ done
 ```
 Display the number of lines in each data file using a similar loop. (Hint: combine linux commands `zcat <` and `wc -l`.)
 
+**Answer** The output of the bash script is the following
+```{bash}
+for datafile in ~/mimic/hosp/{a,l,pa}*.gz
+do
+  echo "$datafile:"
+  zcat "$datafile" | wc -l
+done
+```
+
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? Do they match the number of patients listed in the `patients.csv.gz` file? (Hint: combine Linux commands `zcat <`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
 
-6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on; skip the header line.)
+**Answer**
+```{bash}
+zcat ~/mimic/hosp/admissions.csv.gz | head
+echo "Total number of rows in admissions.csv.gz:"
+zcat ~/mimic/hosp/admissions.csv.gz | wc -l
+echo "Number of unique patients in admissions.csv.gz:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $1}' | sort | uniq | wc -l
+echo "Number of unique patients in patients.csv.gz:"
+zcat ~/mimic/hosp/patients.csv.gz | tail -n +2 | awk -F, '{print $1}' | sort | uniq | wc -l
+```
+The admissions.csv.gz file contains a total of 431,232 rows. These rows represent individual admission records. Upon further analysis, I identified 180,733 unique patients in this file, as indicated by their subject_id. However, this count doesn't align with the number of unique patients in the patients.csv.gz file, which stands at 299,712. 
+
+
+6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`,  `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on; skip the header line.)
+
+**Answer**
+```{bash}
+echo "Possible values for admission_type:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $6}' | sort | uniq
+echo "Count for each unique value of admission_type:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $6}' | sort | uniq -c
+echo "Possible values for admission_location:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $8}' | sort | uniq
+echo "Count for each unique value of admission_location:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $8}' | sort | uniq -c
+echo "Possible values for insurance:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $10}' | sort | uniq
+echo "Count for each unique value of insurance:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $10}' | sort | uniq -c
+echo "Possible values for ethnicity:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $13}' | sort | uniq
+echo "Count for each unique value of ethnicity:"
+zcat ~/mimic/hosp/admissions.csv.gz | tail -n +2 | awk -F, '{print $13}' | sort | uniq -c
+```
 
 7. _To compress, or not to compress. That's the question._ Let's focus on the big data file `labevents.csv.gz`. Compare compressed gz file size to the uncompressed file size. Compare the run times of `zcat < ~/mimic/labevents.csv.gz | wc -l` versus `wc -l labevents.csv`. Discuss the trade off between storage and speed for big data files. (Hint: `gzip -dk < FILENAME.gz > ./FILENAME`. Remember to delete the large `labevents.csv` file after the exercise.)
+
+**Answer**
+```{bash}
+echo "Size of labevents.csv.gz:"
+ls -lh ~/mimic/hosp/labevents.csv.gz
+echo "Decompressing labevents.csv.gz..."
+echo '123456' | sudo -S gzip -dc ~/mimic/hosp/labevents.csv.gz > ~/labevents.csv
+echo "Size of labevents.csv:"
+ls -lh ~/labevents.csv
+echo "Run time of zcat < ~/mimic/labevents.csv.gz | wc -l:"
+time zcat < ~/mimic/hosp/labevents.csv.gz | wc -l
+echo "Run time of wc -l labevents.csv:"
+time wc -l ~/labevents.csv
+```
+The size of labevents.csv.gz is 1.9G. The size of labevents.csv is 13G. The run time of the gz file is 47 secs and the run time for the csv file is 4.5 seconds. The trade off between storage and speed for big data files is that compressed files take up less space but take longer to process. Uncompressed files take up more space but take less time to process.
 
 ## Q4. Who's popular in Price and Prejudice
 
 1. You and your friend just have finished reading *Pride and Prejudice* by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <http://www.gutenberg.org/cache/epub/42671/pg42671.txt> and save to your local folder. 
 ```{bash}
 #| eval: false
+wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+```
+**Answer**
+```{bash}
 wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
 ```
 Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.
@@ -120,6 +193,16 @@ do
 done
 ```
 
+**Answer**
+wget -nc downloads the file only if it doesn't exist in the directory.
+```{bash}
+for char in Elizabeth Jane Lydia Darcy
+do
+  echo $char:
+  grep -o -i "$char" pg42671.txt | wc -l
+done
+```
+
 2. What's the difference between the following two commands?
 ```{bash}
 #| eval: false
@@ -128,6 +211,12 @@ echo 'hello, world' > test1.txt
 and
 ```{bash}
 #| eval: false
+echo 'hello, world' >> test2.txt
+```
+
+**Answer** The first command overwrites the file if it already exists. The second command appends the text to the file if it already exists.
+```{bash}
+echo 'hello, world' > test1.txt
 echo 'hello, world' >> test2.txt
 ```
 
@@ -145,9 +234,60 @@ Using `chmod` to make the file executable by the owner, and run
 ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 
+**Answer**
+```{bash}
+chmod u+x middle.sh
+./middle.sh pg42671.txt 20 5
+```
+The output is the 5 lines starting from line 20 of the file pg42671.txt.
+The meaning of '"$1"' is the first argument passed to the script in my case is the filename (pg42671.txt).The meaning of '"$2"' is the second argument passed to the script which is "20". The meaning of '"$3"' is the third argument passed to the script which is "5". We need the first line of the shell script to tell the computer which shell to use to run the script.
+
 ## Q5. More fun with Linux
 
 Try following commands in Bash and interpret the results: `cal`, `cal 2024`, `cal 9 1752` (anything unusual?), `date`, `hostname`, `arch`, `uname -a`, `uptime`, `who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
+
+**Answer**
+```{bash}
+cal
+cal 2024
+cal 9 1752
+date
+hostname
+arch
+uname -a
+uptime
+who am i
+who
+w
+id
+last | head
+echo {con,pre}{sent,fer}{s,ed}
+time sleep 5
+```
+
+cal command displays the calendar for the current month. 
+cal 2024 displays the calendar for the year 2024. 
+cal 9 1752 displays the calendar for September 1752. The calendar for September 1752 is unusual because it has 11 days missing. 
+date displays the current date and time. 
+hostname displays the name of the host. 
+arch displays the machine hardware name. 
+uname -a displays the kernel name, network node hostname, kernel release, kernel version, machine hardware name, and processor type. 
+uptime displays the current time, how long the system has been running, how many users are currently logged on, and the system load averages for the past 1, 5, and 15 minutes. 
+who am i displays the current user. 
+who displays the current users. 
+w displays the current users and their processes. 
+id displays the current user's UID, GID, and groups. 
+last | head displays the last 10 logins. 
+echo {con,pre}{sent,fer}{s,ed} displays the words consents, confers, presents, and prefers. 
+time sleep 5 This will make the terminal pause for 5 seconds (due to sleep 5), and time will report how long the command took to execute
+
+```{bash}
+history | tail
+```
+![run command in terminal](download.png)
+)
+
+history | tail displays the last 10 commands in the history.
 
 ## Q6. Book
 
@@ -158,3 +298,6 @@ Try following commands in Bash and interpret the results: `cal`, `cal 2024`, `ca
 The point of this exercise is (1) to get the book for free and (2) to see an example how a complicated project such as a book can be organized in a reproducible way.
 
 For grading purpose, include a screenshot of Section 4.1.5 of the book here.
+
+**Answer**
+![screenshot of section 4.1.5](download_1.png)
