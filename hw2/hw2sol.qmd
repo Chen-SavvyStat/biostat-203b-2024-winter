@@ -28,10 +28,9 @@ Display machine information for reproducibility:
 sessionInfo()
 ```
 
-library(arrow)
-
 Load necessary libraries (you can add more as needed).
 ```{r setup}
+library(arrow)
 library(data.table)
 library(memuse)
 library(pryr)
@@ -210,6 +209,42 @@ Our second strategy is to use [Apache Arrow](https://arrow.apache.org/) for larg
 Then use [`arrow::open_dataset`](https://arrow.apache.org/docs/r/reference/open_dataset.html) to ingest `labevents.csv`, select columns, and filter `itemid` as in Q2.3. How long does the ingest+select+filter process take? Display the number of rows and the first 10 rows of the result tibble, and make sure they match those in Q2.3. (Hint: use `dplyr` verbs for selecting columns and filtering rows.)
 
 Write a few sentences to explain what is Apache Arrow. Imagine you want to explain it to a layman in an elevator. 
+
+```{bash}
+#| eval: false
+echo '123456' | sudo -S gzip -dk ~/mimic/hosp/labevents.csv.gz
+```
+
+
+```{r}
+file_path <- "~/mimic/hosp/labevents.csv"
+
+start_time <- Sys.time()
+
+labevents_filtered <- open_dataset(file_path, format = "csv") |>
+  filter(
+    itemid %in% c(
+      50912, 50971, 50983, 
+      50902, 50882, 51221, 
+      51301, 50931
+    )
+  ) |>
+  select(subject_id, itemid, charttime, valuenum) |>
+  collect() #Arrow to tibble
+
+end_time <- Sys.time()
+time_taken <- end_time - start_time
+print(time_taken)
+
+n_rows <- nrow(labevents_filtered)
+print(n_rows)
+
+print(head(labevents_filtered, 10))
+```
+
+**Answer**
+Apache Arrow is a tool that allows data to be stored and processed in a way that is faster and more efficient than traditional methods, making it easier to work with large datasets and perform complex analyses. Imagine Apache Arrow is like a high-speed train for data. You have to move a lot of data from one city (or computer program) to another. Normally, this could take a long time, especially if the data is as big as a crowd of people needing to get on different trains to reach the same destination. Arrow streamlines this process. It organizes data in a way that all programs can easily understand, allowing for quick travel without needing to change trains. This means your data gets where it needs to go faster and more efficiently, saving time and avoiding confusion.
+
 
 ### Q2.5 Compress `labevents.csv` to Parquet format and ingest/select/filter
 
