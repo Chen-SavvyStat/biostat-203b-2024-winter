@@ -185,7 +185,7 @@ gzip > ~/labevents_filtered.csv.gz
 ```
 
 ```{bash}
-zcat labevents_filtered.csv.gz | head -n 10 
+zcat labevents_filtered.csv.gz | tail -n +2 | head -n 10
 zcat labevents_filtered.csv.gz | wc -l
 ```
 
@@ -255,6 +255,50 @@ Apache Arrow is a tool that allows data to be stored and processed in a way that
 Re-write the csv file `labevents.csv` in the binary Parquet format (Hint: [`arrow::write_dataset`](https://arrow.apache.org/docs/r/reference/write_dataset.html).) How large is the Parquet file(s)? How long does the ingest+select+filter process of the Parquet file(s) take? Display the number of rows and the first 10 rows of the result tibble and make sure they match those in Q2.3. (Hint: use `dplyr` verbs for selecting columns and filtering rows.)
 
 Write a few sentences to explain what is the Parquet format. Imagine you want to explain it to a layman in an elevator.
+
+```{r}
+dataset <- arrow::open_dataset("~/mimic/hosp/labevents.csv", format = "csv")
+parquet_path <- "~/mimic/hosp/labevents_parquet"
+
+if (!dir.exists(parquet_path)) {
+  arrow::write_dataset(dataset, parquet_path, format = "parquet")
+  message("Parquet dataset created at: ", parquet_path)
+} else {
+  message("Parquet dataset already exists at: ", parquet_path)
+}
+```
+
+```{r}
+total_size <- sum(file.info(list.files(parquet_path, full.names = TRUE))$size)
+print(paste("Total size of Parquet files:", total_size, "bytes"))
+```
+
+```{r}
+start_time <- Sys.time()
+
+parquet_dataset <- arrow::open_dataset(parquet_path, format = "parquet")
+
+
+filtered_data <- parquet_dataset |>
+  filter(
+    itemid %in% c(
+      50912, 50971, 50983, 
+      50902, 50882, 51221, 
+      51301, 50931
+    )
+  ) |>
+  select(subject_id, itemid, charttime, valuenum) |>
+  collect() 
+
+end_time <- Sys.time()
+time_taken <- end_time - start_time
+print(paste("Time Taken", as.numeric(time_taken), "seconds."))
+print(head(filtered_data, 10))
+```
+
+**Answer**
+Parquet format is like a smart library for your data. Imagine you have lots of books (data) and you need to find specific information quickly. Parquet organizes the books in a way that makes it super easy to find exactly what you're looking for, without having to go through each book page by page. It’s great for storing lots of data efficiently, saving space, and making sure you can access the information you need super fast, whether you’re looking for a single fact or a whole story.
+
 
 ### Q2.6 DuckDB
 
