@@ -361,3 +361,35 @@ zcat < ~/mimic/icu/d_items.csv.gz | head -10
 In later exercises, we are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items, using the favorite method you learnt in Q2. 
 
 Document the steps and show code. Display the number of rows and the first 10 rows of the result tibble.
+
+```{bash}
+#| eval: false
+zcat ~/mimic/icu/chartevents.csv.gz | awk -F, 'NR==1 || $7 ~ /^(220045|220181|\
+220179|223761|220210)$/{print $1","$7","$5","$8}' | \
+gzip > ~/mimic/icu/chartevents_vitals_filtered.csv.gz
+```
+
+```{r}
+start_time <- Sys.time()
+
+# Read the filtered dataset
+vitals_filtered <- read_csv("~/mimic/icu/chartevents_vitals_filtered.csv.gz")
+
+# Stop the clock
+end_time <- Sys.time()
+time_taken <- end_time - start_time
+print(paste("Data loading took", as.numeric(time_taken), "seconds."))
+
+# Display the number of rows
+print(paste("Number of rows in the filtered dataset:", nrow(vitals_filtered)))
+
+# Display the first 10 rows
+print(head(vitals_filtered, 10))
+```
+
+**Answer**
+Document the steps: 
+1. Use the zcat command to decompress the chartevents.csv.gz file and pipe the output to awk. Use the gzip command to compress the output and save it to the current working directory.
+2. Use the awk command to filter the rows in the chartevents.csv file based on the itemid column. The NR==1 condition ensures that the header row is included in the output. The $7 ~ /^(220045|220181|220179|223761|220210)$/ condition filters the rows based on the itemid column, selecting only the rows with the specified itemid values.
+3. Use the print command to output the selected columns (subject_id, itemid, charttime, valuenum) to a new file, chartevents_vitals_filtered.csv.gz.
+4. Display the first 10 lines of the new file chartevents_vitals_filtered.csv.gz and the number of rows in the filtered dataset and the run time.
