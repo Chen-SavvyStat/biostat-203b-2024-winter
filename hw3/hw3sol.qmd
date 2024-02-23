@@ -38,6 +38,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(gridExtra) 
   library(cowplot) 
+  library(lubridate)
 })
 ```
 
@@ -582,7 +583,26 @@ Let us create a tibble `mimic_icu_cohort` for all ICU stays, where rows are all 
 
 The final `mimic_icu_cohort` should have one row per ICU stay and columns for each variable.
 
-![](mimic_icu_cohort.png)
+***Answer***
+```{r, eval = TRUE}
+admissions_tble <- read_csv("~/mimic/hosp/admissions.csv.gz", show_col_types = FALSE)
+icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz", show_col_types = FALSE)
+patients_tble <- read_csv("~/mimic/hosp/patients.csv.gz", show_col_types = FALSE)
+# get the age at intime
+icu_adults <- icustays_tble %>%
+  left_join(patients_tble, by = "subject_id") %>%
+  mutate(age_at_intime = anchor_age + year(intime) - anchor_year) %>%
+  # filter to keep only adults
+  filter(age_at_intime >= 18) 
+mimic_icu_cohort <- icu_adults %>%
+  left_join(admissions_tble, by = "hadm_id") 
+mimic_icu_cohort <- mimic_icu_cohort %>%
+  left_join(labevents_tble, by = c("stay_id"))
+mimic_icu_cohort <- mimic_icu_cohort %>%
+  left_join(chartevents_tble, by = c("stay_id"))|>
+  print(width = Inf)
+
+```
 
 ## Q8. Exploratory data analysis (EDA)
 
