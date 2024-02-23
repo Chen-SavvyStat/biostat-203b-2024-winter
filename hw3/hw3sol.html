@@ -3133,7 +3133,7 @@ loaded via a namespace (and not attached):
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>memuse<span class="sc">::</span><span class="fu">Sys.meminfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Totalram:  15.233 GiB 
-Freeram:    7.769 GiB </code></pre>
+Freeram:    8.690 GiB </code></pre>
 </div>
 </div>
 <p>In this exercise, we use tidyverse (ggplot2, dplyr, etc) to explore the <a href="https://mimic.mit.edu/docs/iv/">MIMIC-IV</a> data introduced in <a href="https://ucla-biostat-203b.github.io/2024winter/hw/hw1/hw1.html">homework 1</a> and to build a cohort of ICU stays.</p>
@@ -3567,24 +3567,131 @@ Freeram:    7.769 GiB </code></pre>
 <p><code>labevents.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/hosp/labevents/" class="uri">https://mimic.mit.edu/docs/iv/modules/hosp/labevents/</a>) contains all laboratory measurements for patients. The first 10 lines are</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/hosp/labevents.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>labevent_id,subject_id,hadm_id,specimen_id,itemid,order_provider_id,charttime,storetime,value,valuenum,valueuom,ref_range_lower,ref_range_upper,flag,priority,comments
+1,10000032,,45421181,51237,P28Z0X,2180-03-23 11:51:00,2180-03-23 15:15:00,1.4,1.4,,0.9,1.1,abnormal,ROUTINE,
+2,10000032,,45421181,51274,P28Z0X,2180-03-23 11:51:00,2180-03-23 15:15:00,___,15.1,sec,9.4,12.5,abnormal,ROUTINE,VERIFIED.
+3,10000032,,52958335,50853,P28Z0X,2180-03-23 11:51:00,2180-03-25 11:06:00,___,15,ng/mL,30,60,abnormal,ROUTINE,NEW ASSAY IN USE ___: DETECTS D2 AND D3 25-OH ACCURATELY.
+4,10000032,,52958335,50861,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,102,102,IU/L,0,40,abnormal,ROUTINE,
+5,10000032,,52958335,50862,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,3.3,3.3,g/dL,3.5,5.2,abnormal,ROUTINE,
+6,10000032,,52958335,50863,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,109,109,IU/L,35,105,abnormal,ROUTINE,
+7,10000032,,52958335,50864,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,___,8,ng/mL,0,8.7,,ROUTINE,MEASURED BY ___.
+8,10000032,,52958335,50868,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,12,12,mEq/L,8,20,,ROUTINE,
+9,10000032,,52958335,50878,P28Z0X,2180-03-23 11:51:00,2180-03-23 16:40:00,143,143,IU/L,0,40,abnormal,ROUTINE,</code></pre>
+</div>
 </div>
 <p><code>d_labitems.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/hosp/d_labitems/" class="uri">https://mimic.mit.edu/docs/iv/modules/hosp/d_labitems/</a>) is the dictionary of lab measurements.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/hosp/d_labitems.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/hosp/d_labitems.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>itemid,label,fluid,category
+50801,Alveolar-arterial Gradient,Blood,Blood Gas
+50802,Base Excess,Blood,Blood Gas
+50803,&quot;Calculated Bicarbonate, Whole Blood&quot;,Blood,Blood Gas
+50804,Calculated Total CO2,Blood,Blood Gas
+50805,Carboxyhemoglobin,Blood,Blood Gas
+50806,&quot;Chloride, Whole Blood&quot;,Blood,Blood Gas
+50808,Free Calcium,Blood,Blood Gas
+50809,Glucose,Blood,Blood Gas
+50810,&quot;Hematocrit, Calculated&quot;,Blood,Blood Gas</code></pre>
+</div>
 </div>
 <p>We are interested in the lab measurements of creatinine (50912), potassium (50971), sodium (50983), chloride (50902), bicarbonate (50882), hematocrit (51221), white blood cell count (51301), and glucose (50931). Retrieve a subset of <code>labevents.csv.gz</code> that only containing these items for the patients in <code>icustays_tble</code>. Further restrict to the last available measurement (by <code>storetime</code>) before the ICU stay. The final <code>labevents_tble</code> should have one row per ICU stay and columns for each lab measurement.</p>
-<p><img src="labevents_tble.png" class="img-fluid"></p>
-<p>Hint: Use the Parquet format you generated in Homework 2. For reproducibility, make <code>labevents_pq</code> folder available at the current working directory <code>hw3</code>, for example, by a symbolic link.</p>
+<p><strong><em>Answer</em></strong> Read the dictionary</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>dlabitems_tble <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;~/mimic/hosp/d_labitems.csv.gz&quot;</span>,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                           <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> <span class="fu">c</span>(</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">50912</span>, <span class="dv">50971</span>, <span class="dv">50983</span>, <span class="dv">50902</span>, <span class="dv">50882</span>, <span class="dv">51221</span>, <span class="dv">51301</span>, <span class="dv">50931</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>icustays_tble <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;~/mimic/icu/icustays.csv.gz&quot;</span>, </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># filter labevents_tble_orig</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>labevents_tble_orig <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">&quot;labevents_pq&quot;</span>, <span class="at">format =</span> <span class="st">&quot;parquet&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subject_id, itemid, storetime, valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> dlabitems_tble<span class="sc">$</span>itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(subject_id <span class="sc">%in%</span> icustays_tble<span class="sc">$</span>subject_id) <span class="sc">%&gt;%</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="ot">&lt;-</span> labevents_tble_orig <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># left join with icustays_tble to get intime</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(icustays_tble, subject_id, stay_id, intime),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter to get the last available measurement before the ICU stay</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(storetime <span class="sc">&lt;=</span> intime) <span class="sc">%&gt;%</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subject_id, stay_id, itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># arrange by storetime and select the last measurement</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(storetime, <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_tail</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>storetime, <span class="sc">-</span>intime) <span class="sc">%&gt;%</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># pivot_wider to get one row per ICU stay</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> itemid, <span class="at">values_from =</span> valuenum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in left_join(., select(icustays_tble, subject_id, stay_id, intime), : Detected an unexpected many-to-many relationship between `x` and `y`.
+ℹ Row 845 of `x` matches multiple rows in `y`.
+ℹ Row 1 of `y` matches multiple rows in `x`.
+ℹ If a many-to-many relationship is expected, set `relationship =
+  &quot;many-to-many&quot;` to silence this warning.</code></pre>
+</div>
+</div>
+<p>rename the columns</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename the columns</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>item_to_label <span class="ot">&lt;-</span> dlabitems_tble <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">deframe</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `x` must be a one- or two-column data frame in `deframe()`.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="ot">&lt;-</span> labevents_tble <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="at">.fn =</span> <span class="sc">~</span><span class="fu">ifelse</span>(.x <span class="sc">%in%</span> <span class="fu">names</span>(item_to_label), item_to_label[.x], .x), <span class="at">.cols =</span> <span class="fu">everything</span>())</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(labevents_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 68,468 × 10
+# Groups:   subject_id, stay_id [68,468]
+   subject_id  stay_id Bicarbonate Chloride Creatinine Glucose Potassium Sodium
+        &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+ 1   10000032 39553978          25       95        0.7     102       6.7    126
+ 2   10000980 39765666          21      109        2.3      89       3.9    144
+ 3   10001217 34592300          30      104        0.5      87       4.1    142
+ 4   10001217 37067082          22      108        0.6     112       4.2    142
+ 5   10001725 31205490          NA       98       NA        NA       4.1    139
+ 6   10001884 37510196          30       88        1.1     141       4.5    130
+ 7   10002013 39060235          24      102        0.9     288       3.5    137
+ 8   10002155 31090461          23       98        2.8     117       4.9    135
+ 9   10002155 32358465          26       85        1.4     133       5.7    120
+10   10002155 33685454          24      105        1.1     138       4.6    139
+   Hematocrit `White Blood Cells`
+        &lt;dbl&gt;               &lt;dbl&gt;
+ 1       41.1                 6.9
+ 2       27.3                 5.3
+ 3       37.4                 5.4
+ 4       38.1                15.7
+ 5       NA                  NA  
+ 6       39.7                12.2
+ 7       34.9                 7.2
+ 8       25.5                17.9
+ 9       22.4                 9.8
+10       39.7                 7.9
+# ℹ 68,458 more rows</code></pre>
+</div>
+</div>
 </section>
 <section id="q6.-vitals-from-charted-events" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-vitals-from-charted-events">Q6. Vitals from charted events</h2>
 <p><code>chartevents.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/icu/chartevents/" class="uri">https://mimic.mit.edu/docs/iv/modules/icu/chartevents/</a>) contains all the charted data available for a patient. During their ICU stay, the primary repository of a patient’s information is their electronic chart. The <code>itemid</code> variable indicates a single measurement type in the database. The <code>value</code> variable is the value measured for <code>itemid</code>. The first 10 lines of <code>chartevents.csv.gz</code> are</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/icu/chartevents.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/icu/chartevents.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>d_items.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/icu/d_items/" class="uri">https://mimic.mit.edu/docs/iv/modules/icu/d_items/</a>) is the dictionary for the <code>itemid</code> in <code>chartevents.csv.gz</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/icu/d_items.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">zcat</span> <span class="op">&lt;</span> ~/mimic/icu/d_items.csv.gz <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We are interested in the vitals for ICU patients: heart rate (220045), systolic non-invasive blood pressure (220179), diastolic non-invasive blood pressure (220180), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of <code>chartevents.csv.gz</code> only containing these items for the patients in <code>icustays_tble</code>. Further restrict to the first vital measurement within the ICU stay. The final <code>chartevents_tble</code> should have one row per ICU stay and columns for each vital measurement.</p>
 <p><img src="chartevents_tble.png" class="img-fluid"></p>
@@ -3611,7 +3718,7 @@ Freeram:    7.769 GiB </code></pre>
 <ul>
 <li><p>Length of ICU stay <code>los</code> vs demographic variables (race, insurance, marital_status, gender, age at intime)</p></li>
 <li><p>Length of ICU stay <code>los</code> vs the last available lab measurements before ICU stay</p></li>
-<li><p>Length of ICU stay <code>los</code> vs the average vital measurements within the first hour of ICU stay</p></li>
+<li><p>Length of ICU stay los vs the first vital measurements within the ICU stay</p></li>
 <li><p>Length of ICU stay <code>los</code> vs first ICU unit</p></li>
 </ul>
 </section>

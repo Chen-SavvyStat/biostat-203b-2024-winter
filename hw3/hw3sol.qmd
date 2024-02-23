@@ -444,21 +444,70 @@ From the graph, for gender, it is generally balanced. For anchor age, more patie
 ## Q5. Lab results
 
 `labevents.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/hosp/labevents/>) contains all laboratory measurements for patients. The first 10 lines are
-```{bash}
+```{bash, eval = TRUE}
 zcat < ~/mimic/hosp/labevents.csv.gz | head
 ```
 
 `d_labitems.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/hosp/d_labitems/>) is the dictionary of lab measurements. 
-```{bash}
+```{bash, eval = TRUE}
 zcat < ~/mimic/hosp/d_labitems.csv.gz | head
 ```
 
 We are interested in the lab measurements of creatinine (50912), potassium (50971), sodium (50983), chloride (50902), bicarbonate (50882), hematocrit (51221), white blood cell count (51301), and glucose (50931). Retrieve a subset of `labevents.csv.gz` that only containing these items for the patients in `icustays_tble`. Further restrict to the last available measurement (by `storetime`) before the ICU stay. The final `labevents_tble` should have one row per ICU stay and columns for each lab measurement.
 
-![](labevents_tble.png)
+***Answer***
+Read the dictionary
+```{r, eval = TRUE}
+dlabitems_tble <- read_csv("~/mimic/hosp/d_labitems.csv.gz",
+                           show_col_types = FALSE) |>
+  filter(itemid %in% c(
+    50912, 50971, 50983, 50902, 50882, 51221, 51301, 50931
+  ))
+```
+
+```{r, eval = TRUE}
+icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz", 
+                          show_col_types = FALSE)
+
+# filter labevents_tble_orig
+labevents_tble_orig <- open_dataset("labevents_pq", format = "parquet") %>%
+  select(subject_id, itemid, storetime, valuenum) %>%
+  filter(itemid %in% dlabitems_tble$itemid) %>%
+  filter(subject_id %in% icustays_tble$subject_id) %>%
+  collect()
+```
+
+```{r, eval = TRUE}
+labevents_tble <- labevents_tble_orig %>%
+  # left join with icustays_tble to get intime
+  left_join(
+    select(icustays_tble, subject_id, stay_id, intime),
+    by = "subject_id"
+  ) %>%
+  # filter to get the last available measurement before the ICU stay
+  filter(storetime <= intime) %>%
+  group_by(subject_id, stay_id, itemid) %>%
+  # arrange by storetime and select the last measurement
+  arrange(storetime, .by_group = TRUE) %>%
+  slice_tail(n = 1) %>%
+  select(-storetime, -intime) %>%
+  # pivot_wider to get one row per ICU stay
+  pivot_wider(names_from = itemid, values_from = valuenum)
+```
+rename the columns
+```{r, eval = TRUE}
+#rename the columns
+item_to_label <- dlabitems_tble %>%
+  deframe()
+
+labevents_tble <- labevents_tble %>%
+  rename_with(.fn = ~ifelse(.x %in% names(item_to_label), item_to_label[.x], .x), .cols = everything())
+
+print(labevents_tble, width = Inf)
+```
 
 
-Hint: Use the Parquet format you generated in Homework 2. For reproducibility, make `labevents_pq` folder available at the current working directory `hw3`, for example, by a symbolic link.
+
 
 ## Q6. Vitals from charted events
 
@@ -500,6 +549,6 @@ Summarize the following information about the ICU stay cohort `mimic_icu_cohort`
 
 - Length of ICU stay `los` vs the last available lab measurements before ICU stay
 
-- Length of ICU stay `los` vs the average vital measurements within the first hour of ICU stay
+- Length of ICU stay los vs the first vital measurements within the ICU stay
 
 - Length of ICU stay `los` vs first ICU unit
