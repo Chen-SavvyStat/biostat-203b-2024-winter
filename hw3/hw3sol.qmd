@@ -271,7 +271,7 @@ Check the plot saved in the current working directory.
 ## Q2. ICU stays
 
 `icustays.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/icustays/>) contains data about Intensive Care Units (ICU) stays. The first 10 lines are
-```{bash}
+```{bash, eval=TRUE}
 zcat < ~/mimic/icu/icustays.csv.gz | head
 ```
 
@@ -289,8 +289,35 @@ icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz",
 
 How many unique `subject_id`? Can a `subject_id` have multiple ICU stays? Summarize the number of ICU stays per `subject_id` by graphs. 
 
+***Answer***
 ```{r, eval = TRUE}
-## Q3. `admissions` data
+unique_subjects <- icustays_tble %>% 
+  summarise(unique_subjects = n_distinct(subject_id))
+
+icu_stays_per_subject <- icustays_tble %>% 
+  group_by(subject_id) %>% 
+  summarise(icu_stays = n()) %>% 
+  ungroup()
+
+multiple_icu_stays <- icu_stays_per_subject %>% 
+  filter(icu_stays > 1)
+
+if(nrow(multiple_icu_stays) > 0) {
+  cat("Yes, a subject_id can have multiple ICU stays.\n")
+} else {
+  cat("No, each subject_id corresponds to a single ICU stay.\n")
+}
+
+ggplot(icu_stays_per_subject, aes(x = icu_stays)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution of ICU Stays per Subject",
+       x = "Number of ICU Stays",
+       y = "Count of Subjects")
+```
+From the histogram, we can see that most subjects have only one ICU stay, and the number of ICU stays per subject decreases as the number of ICU stays increases.
+
+### Q3. `admissions` data
 
 #Information of the patients admitted into hospital is available in `admissions.csv.gz`. See <https://mimic.mit.edu/docs/iv/modules/hosp/admissions/> for details of each field in this file. The first 10 lines are
 ```{bash}
@@ -300,6 +327,12 @@ zcat < ~/mimic/hosp/admissions.csv.gz | head
 ### Q3.1 Ingestion
 
 Import `admissions.csv.gz` as a tibble `admissions_tble`.
+
+***Answer***
+```{r, eval = TRUE}
+admissions_tble <- read_csv("~/mimic/hosp/admissions.csv.gz", 
+                            show_col_types = FALSE)
+```
 
 ### Q3.2 Summary and visualization
 
@@ -313,6 +346,58 @@ Summarize the following information by graphics and explain any patterns you see
 According to the [MIMIC-IV documentation](https://mimic.mit.edu/docs/iv/about/concepts/#date-shifting), 
 
 > All dates in the database have been shifted to protect patient confidentiality. Dates will be internally consistent for the same patient, but randomly distributed in the future. Dates of birth which occur in the present time are not true dates of birth. Furthermore, dates of birth which occur before the year 1900 occur if the patient is older than 89. In these cases, the patient’s age at their first admission has been fixed to 300.
+
+***Answer***
+```{r, eval = TRUE}
+admissions_count_per_patient <- admissions_tble %>%
+  group_by(subject_id) %>%
+  summarize(admissions_count = n())
+ggplot(admissions_count_per_patient, aes(x = admissions_count)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "white") +
+  labs(title = "Distribution of Admissions per Patient",
+       x = "Number of Admissions",
+       y = "Frequency") +
+  xlim(NA, 50)
+
+```
+
+Most patients have only one admission, and the number of admissions per patient decreases as the number of admissions.
+
+```{r, eval = TRUE}
+admissions_tble %>%
+  mutate(admittime = as.POSIXct(admittime)) %>%
+  ggplot(aes(x = hour(admittime))) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "white") +
+  labs(title = "Distribution of Admission Hour",
+       x = "Hour",
+       y = "Frequency")
+```
+There is nothing really unusual about the distribution of admission hours. Just a few more admissions occur around 12 am seems to be a little unusual.
+
+```{r, eval = TRUE}
+admissions_tble %>%
+  mutate(admittime = as.POSIXct(admittime)) %>%
+  ggplot(aes(x = minute(admittime))) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "white") +
+  labs(title = "Distribution of Admission Minute",
+       x = "Minute",
+       y = "Frequency")
+```
+There are four peaks in the distribution of admission minutes, which is unusual.
+
+```{r, eval = TRUE}
+admissions_tble <- admissions_tble %>%
+  mutate(hospital_stay_length = as.numeric(difftime(dischtime, admittime, units = "days")))
+
+ggplot(admissions_tble, aes(x = hospital_stay_length)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "white") +
+  labs(title = "Distribution of Hospital Stay Length",
+       x = "Length of Stay (Days)",
+       y = "Frequency") +
+  coord_cartesian(xlim = c(0, 50))
+```
+The length of hospital stay is right-skewed, and most patients stay in the hospital for less than 10 days. There are a few patients who stay in the hospital for more than 20 days, generaly is usual.
+
 
 ## Q4. `patients` data
 
