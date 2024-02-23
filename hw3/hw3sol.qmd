@@ -402,17 +402,44 @@ The length of hospital stay is right-skewed, and most patients stay in the hospi
 ## Q4. `patients` data
 
 Patient information is available in `patients.csv.gz`. See <https://mimic.mit.edu/docs/iv/modules/hosp/patients/> for details of each field in this file. The first 10 lines are
-```{bash}
+```{bash, eval = TRUE}
 zcat < ~/mimic/hosp/patients.csv.gz | head
 ```
+
 
 ### Q4.1 Ingestion
 
 Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/hosp/patients/>) as a tibble `patients_tble`.
 
+***Answer***
+```{r, eval = TRUE}
+patients_tble <- read_csv("~/mimic/hosp/patients.csv.gz", 
+                          show_col_types = FALSE)
+```
+
 ### Q4.2 Summary and visualization
 
 Summarize variables `gender` and `anchor_age` by graphics, and explain any patterns you see.
+
+***Answer***
+```{r, eval = TRUE}
+gender_distribution <- patients_tble %>%
+  count(gender)
+
+ggplot(gender_distribution, aes(x = gender, y = n, fill = gender)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Gender Distribution in Patients",
+       x = "Gender",
+       y = "Count")
+
+ggplot(patients_tble, aes(x = anchor_age)) +
+  geom_histogram(binwidth = 5, fill = "cornflowerblue", color = "black") +
+  labs(title = "Distribution of Anchor Age",
+       x = "Anchor Age",
+       y = "Frequency")
+```
+
+From the graph, for gender, it is generally balanced. For anchor age, more patients are between 0 and 25 years old, and the number of patients decreases as the age increases. There is a small peak around 50 years old.
 
 ## Q5. Lab results
 
