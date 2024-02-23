@@ -463,9 +463,7 @@ dlabitems_tble <- read_csv("~/mimic/hosp/d_labitems.csv.gz",
   filter(itemid %in% c(
     50912, 50971, 50983, 50902, 50882, 51221, 51301, 50931
   ))
-```
 
-```{r, eval = TRUE}
 icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz", 
                           show_col_types = FALSE)
 
@@ -485,7 +483,7 @@ labevents_tble <- labevents_tble_orig %>%
     by = "subject_id"
   ) %>%
   # filter to get the last available measurement before the ICU stay
-  filter(storetime <= intime) %>%
+  filter(storetime < intime) %>%
   group_by(subject_id, stay_id, itemid) %>%
   # arrange by storetime and select the last measurement
   arrange(storetime, .by_group = TRUE) %>%
@@ -507,8 +505,6 @@ print(labevents_tble, width = Inf)
 ```
 
 
-
-
 ## Q6. Vitals from charted events
 
 `chartevents.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/icu/chartevents/>) contains all the charted data available for a patient. During their ICU stay, the primary repository of a patient’s information is their electronic chart. The `itemid` variable indicates a single measurement type in the database. The `value` variable is the value measured for `itemid`. The first 10 lines of `chartevents.csv.gz` are
@@ -526,6 +522,53 @@ We are interested in the vitals for ICU patients: heart rate (220045), systolic 
 ![](chartevents_tble.png)
 
 Hint: Use the Parquet format you generated in Homework 2. For reproducibility, make `chartevents_pq` folder available at the current working directory, for example, by a symbolic link.
+
+```{r, eval = TRUE}
+
+# Read the item dictionary to map itemid to labels
+d_items_tble <- read_csv("~/mimic/icu/d_items.csv.gz",
+                           show_col_types = FALSE) |>
+# Specify the item IDs for the vitals of interest
+  filter(itemid %in% c(
+    220045, 220179, 220180, 223761, 220210
+  ))
+```
+
+```{r, eval = TRUE}
+icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz", 
+                          show_col_types = FALSE)
+# read Parquet data
+chartevents_tble_orig <- open_dataset("chartevents_pq", format = "parquet") %>%
+  select(subject_id, itemid, charttime, valuenum) %>%
+  filter(itemid %in% d_items_tble$itemid) %>%
+  filter(subject_id %in% icustays_tble$subject_id) %>%
+  collect()
+
+chartevents_tble <- chartevents_tble_orig %>%
+  left_join(
+    select(icustays_tble, subject_id, stay_id, intime, outtime), 
+    by = "subject_id"
+  ) %>%
+  filter(charttime >= intime & charttime <= outtime) %>%
+  group_by(subject_id, stay_id, itemid) %>%
+  arrange(charttime, .by_group = TRUE) %>%
+  slice_head(n = 1) %>%
+  ungroup() %>%
+  select(-charttime, -intime, outtime) %>%
+  pivot_wider(names_from = itemid, values_from = valuenum)
+```
+
+```{r, eval = TRUE}
+#rename the columns
+item_to_label <- d_items_tble %>%
+  deframe()
+
+chartevents_tble <- chartevents_tble %>%
+  rename_with(.fn = ~ifelse(.x %in% names(item_to_label), item_to_label[.x], .x), .cols = everything())
+
+print(chartevents_tble, width = Inf)
+```
+
 
 ## Q7. Putting things together
 
