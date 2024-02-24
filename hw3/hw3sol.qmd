@@ -68,6 +68,7 @@ if (!file.exists("labevents_pq")) {
   system("ln -s ~/mimic/hosp/labevents_parquet labevents_pq")
 }
 
+#This step is to read the data from the csv files
 read_csv <- readr::read_csv
 patients <- read_csv("~/mimic/hosp/patients.csv.gz", 
                      show_col_types = FALSE)
@@ -86,6 +87,8 @@ d_icd_diagnoses <- read_csv("~/mimic/hosp/d_icd_diagnoses.csv.gz",
 
 labevents <- arrow::open_dataset("labevents_pq", format = "parquet")
 
+
+# This step is to filter the data for the patient with subject_id 10013310
 filter_subject <- function(df) {
   df %>% dplyr::filter(subject_id == 10013310)
 }
@@ -109,6 +112,7 @@ patient_info <- patients %>%
   ) %>% 
   dplyr::pull(title)
 
+#This is to get the top 3 diagnoses and title
 top_diagnoses <- patient_diagnoses_icd %>% 
   filter(subject_id == 10013310) %>% 
   filter(seq_num %in% 1:3) %>% 
@@ -145,6 +149,7 @@ procedure_data <- patient_procedures_icd %>%
     chartdate = as.POSIXct(chartdate, format = "%Y-%m-%d")
   )
 
+# This is to create the plot
 your_plot <- ggplot() +
   geom_segment(data = adt_data_plot_clean, 
                aes(x = intime, xend = outtime, y = y_position, 
@@ -187,6 +192,7 @@ Do a similar visualization for the patient `10013310`.
 **Answer**
 
 ```{r, eval = FALSE}
+# This step is to create the symbolic link
 dataset <- arrow::open_dataset("~/mimic/icu/chartevents.csv", format = "csv")
 parquet_path <- "~/mimic/icu/chartevents_parquet"
 
@@ -199,24 +205,28 @@ if (!dir.exists(parquet_path)) {
 ```
 
 ```{r, eval=TRUE, warning=FALSE}
+# This step is to read the data from the csv files
 if (!file.exists("chartevents_pq")) {
   system("ln -s ~/mimic/icu/chartevents_parquet chartevents_pq")
 }
 read_csv <- readr::read_csv
-chartevents_vitals_filtered <- read_csv("~/mimic/icu/chartevents_vitals_filtered.csv.gz",
+chartevents_vitals_filtered <- 
+  read_csv("~/mimic/icu/chartevents_vitals_filtered.csv.gz",
                                         show_col_types = FALSE)
 d_items <- read_csv("~/mimic/icu/d_items.csv.gz", 
                     show_col_types = FALSE)
 
 chartevents <- arrow::open_dataset("chartevents_pq", format = "parquet")
 
+# This step is to filter the data for the patient with subject_id 10013310
 filter_subject <- function(df) {
   df %>% dplyr::filter(subject_id == 10013310)
 }
 patient_chartevents <- chartevents %>% 
   filter_subject() %>% 
   collect()
-patient_chartevents_vitals_filtered <- chartevents_vitals_filtered %>% filter_subject()
+patient_chartevents_vitals_filtered <- 
+  chartevents_vitals_filtered %>% filter_subject()
 
 chartevents_vitals_filtered <- chartevents_vitals_filtered %>%
   mutate(value = as.numeric(value))
@@ -231,15 +241,18 @@ combined_data <- chartevents_vitals_filtered %>%
 combined_data_with_abbreviation <- combined_data %>%
   left_join(d_items %>% select(itemid, abbreviation), by = "itemid")
 
+# This step is to choose the selected itemids
 selected_itemids <- c(220045, 220181, 220179, 220210, 223761)
 
 filtered_data <- combined_data_with_abbreviation %>%
   filter(itemid %in% selected_itemids)
 
 filtered_data$charttime <- as.POSIXct(filtered_data$charttime)
-filtered_data$charttime_formatted <- format(filtered_data$charttime, "%b %d %H:%M")
-
-vital_plot <- ggplot(filtered_data, aes(x = charttime, y = value, color = abbreviation)) +
+filtered_data$charttime_formatted <- format(filtered_data$charttime,
+                                            "%b %d %H:%M")
+# This step is to create the plot
+vital_plot <- ggplot(filtered_data, aes(x = charttime, y = value,
+                                        color = abbreviation)) +
   geom_line() +
   geom_point() +
   facet_grid(abbreviation ~ stay_id, scales = "free", space = "fixed") +
@@ -263,7 +276,8 @@ vital_plot <- ggplot(filtered_data, aes(x = charttime, y = value, color = abbrev
     plot.title = element_text(hjust = 0, size = 14)
   )
 
-ggsave("Patient_Vitals.jpeg", plot = vital_plot, width = 20, height = 8, dpi = 300)
+ggsave("Patient_Vitals.jpeg", plot = vital_plot, width = 20, height = 8,
+       dpi = 300)
 ```
 
 Check the plot saved in the current working directory.
@@ -311,12 +325,13 @@ if(nrow(multiple_icu_stays) > 0) {
 
 ggplot(icu_stays_per_subject, aes(x = icu_stays)) +
   geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlim(0, 15) +  # Setting hard limits on the x-axis
   theme_minimal() +
   labs(title = "Distribution of ICU Stays per Subject",
        x = "Number of ICU Stays",
        y = "Count of Subjects")
 ```
-From the histogram, we can see that most subjects have only one ICU stay, and the number of ICU stays per subject decreases as the number of ICU stays increases.
+From the histogram, we can see that most subjects have less than 3 ICU stay, and the number of ICU stays per subject decreases as the number of ICU stays increases. And there are rows removed for N/A data.
 
 ### Q3. `admissions` data
 
@@ -362,7 +377,7 @@ ggplot(admissions_count_per_patient, aes(x = admissions_count)) +
 
 ```
 
-Most patients have only one admission, and the number of admissions per patient decreases as the number of admissions.
+Most patients have only one admission, and the number of admissions per patient decreases as the number of admissions. And there are rows removed for N/A data.
 
 ```{r, eval = TRUE}
 admissions_tble %>%
@@ -388,7 +403,8 @@ There are four peaks in the distribution of admission minutes, which is unusual.
 
 ```{r, eval = TRUE}
 admissions_tble <- admissions_tble %>%
-  mutate(hospital_stay_length = as.numeric(difftime(dischtime, admittime, units = "days")))
+  mutate(hospital_stay_length = as.numeric(
+    difftime(dischtime, admittime, units = "days")))
 
 ggplot(admissions_tble, aes(x = hospital_stay_length)) +
   geom_histogram(binwidth = 1, fill = "blue", color = "white") +
@@ -500,7 +516,8 @@ item_to_label <- dlabitems_tble %>%
   deframe()
 
 labevents_tble <- labevents_tble %>%
-  rename_with(.fn = ~ifelse(.x %in% names(item_to_label), item_to_label[.x], .x), .cols = everything())
+  rename_with(.fn = ~ifelse(.x %in% names(item_to_label),
+                            item_to_label[.x], .x), .cols = everything())
 
 print(labevents_tble, width = Inf)
 ```
@@ -565,7 +582,8 @@ item_to_label <- d_items_tble %>%
   deframe()
 
 chartevents_tble <- chartevents_tble %>%
-  rename_with(.fn = ~ifelse(.x %in% names(item_to_label), item_to_label[.x], .x), .cols = everything())
+  rename_with(.fn = ~ifelse(.x %in% names(item_to_label),
+                            item_to_label[.x], .x), .cols = everything())
 
 print(chartevents_tble, width = Inf)
 ```
@@ -585,9 +603,12 @@ The final `mimic_icu_cohort` should have one row per ICU stay and columns for ea
 
 ***Answer***
 ```{r, eval = TRUE}
-admissions_tble <- read_csv("~/mimic/hosp/admissions.csv.gz", show_col_types = FALSE)
-icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz", show_col_types = FALSE)
-patients_tble <- read_csv("~/mimic/hosp/patients.csv.gz", show_col_types = FALSE)
+admissions_tble <- read_csv("~/mimic/hosp/admissions.csv.gz",
+                            show_col_types = FALSE)
+icustays_tble <- read_csv("~/mimic/icu/icustays.csv.gz",
+                          show_col_types = FALSE)
+patients_tble <- read_csv("~/mimic/hosp/patients.csv.gz",
+                          show_col_types = FALSE)
 # get the age at intime
 icu_adults <- icustays_tble %>%
   left_join(patients_tble, by = "subject_id") %>%
@@ -610,8 +631,178 @@ Summarize the following information about the ICU stay cohort `mimic_icu_cohort`
 
 - Length of ICU stay `los` vs demographic variables (race, insurance, marital_status, gender, age at intime)
 
+```{r}
+# Check the structure of mimic_icu_cohort to ensure the presence of all variables
+str(mimic_icu_cohort)
+```
+```{r, eval = TRUE}
+# Summarize and plot Length of ICU stay by race
+ggplot(mimic_icu_cohort, aes(x = race, y = los)) +
+  geom_boxplot() +
+  labs(title = "Length of ICU Stay by Race",
+       x = "Race", y = "Length of Stay (days)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+The boxplot visualizes the lengths of ICU stays categorized by race. It seems that the median length of stay, indicated by the line within each box, is fairly consistent across different racial groups; however, it's important to note that the scale of the y-axis might compress the boxes, making differences in medians appear less pronounced.
+
+The numerous points above the upper whiskers of the boxplots represent outliers, which are individual ICU stay lengths that fall well outside the typical range for each category. These outliers suggest that while the median stay is similar across groups, there are cases within every racial category with substantially longer ICU stays than the median. This indicates variability and the presence of extreme values in the dataset. The consistency of the medians does not imply that the experiences of ICU stays are uniform across races, as the outliers and the range of the interquartile distances (the height of the boxes) reveal differences in the distribution of stays.
+
+```{r, eval = TRUE}
+# Summarize and plot Length of ICU stay by insurance
+ggplot(mimic_icu_cohort, aes(x = insurance, y = los)) +
+  geom_point() +
+  labs(title = "Length of ICU Stay by Insurance", x = "Insurance",
+       y = "Length of Stay (days)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+The scatter plot visualizes the lengths of ICU stays categorized by insurance type. The plot shows that the distribution of ICU stay lengths is similar across insurance types, with no clear differences in the median length of stay. However, the plot also shows that there are more patients with private insurance and Medicare, and fewer patients with Medicaid.
+
+
+```{r, eval = TRUE}
+# Summarize and plot Length of ICU stay by marital_status
+ggplot(mimic_icu_cohort, aes(x = marital_status, y = los)) +
+  geom_point() +
+  labs(title = "Length of ICU Stay by Marital Status",
+       x = "Marital Status", y = "Length of Stay (days)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+The scatter plot visualizes the lengths of ICU stays categorized by marital status. The plot shows that the distribution of ICU stay lengths is similar across marital status categories, with no clear differences in the median length of stay. However, the plot also shows that there are more patients who are married and fewer patients who are divorced or separated.
+
+```{r, eval = TRUE}
+# Summarize and plot Length of ICU stay by gender
+ggplot(mimic_icu_cohort, aes(x = gender, y = los)) +
+  geom_point() +
+  labs(title = "Length of ICU Stay by Gender", x = "Gender",
+       y = "Length of Stay (days)")
+```
+The scatter plot visualizes the lengths of ICU stays categorized by gender. The plot shows that the distribution of ICU stay lengths is similar for both gender. But with a little longer stay of women due to the outliers.
+
+
+```{r, eval = TRUE}
+# Summarize and plot Length of ICU stay by age at intime
+# For age, since it's a continuous variable, we use a scatter plot with a smoothing line
+ggplot(mimic_icu_cohort, aes(x = age_at_intime, y = los)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE, color = "blue") +
+  labs(title = "Length of ICU Stay by Age at Intime", x = "Age at Intime",
+       y = "Length of Stay (days)")
+```
+The scatter plot visualizes the lengths of ICU stays categorized by age at intime. The plot shows that the distribution of ICU stay lengths is similar across age groups, with no clear differences in the median length of stay. However, the plot also shows that there are more patients in the age range around 75 years, and fewer patients in the age range of 85-100 years.
+
 - Length of ICU stay `los` vs the last available lab measurements before ICU stay
+
+```{r, eval = TRUE}
+library(ggplot2)
+library(patchwork)
+
+#individual plots for labevents
+p1 <- ggplot(mimic_icu_cohort, aes(x = Creatinine, y = los))+
+  geom_point() + labs(title = "Creatinine")
+p2 <- ggplot(mimic_icu_cohort, aes(x = Potassium, y = los)) +
+  geom_point() + labs(title = "Potassium")
+p3 <- ggplot(mimic_icu_cohort, aes(x = Sodium, y = los)) +
+  geom_point() + labs(title = "Sodium")
+p4 <- ggplot(mimic_icu_cohort, aes(x = Chloride, y = los)) +
+  geom_point() + labs(title = "Chloride")
+p5 <- ggplot(mimic_icu_cohort, aes(x = Bicarbonate, y = los)) +
+  geom_point() + labs(title = "Bicarbonate")
+p6 <- ggplot(mimic_icu_cohort, aes(x = Hematocrit, y = los)) +
+  geom_point() + labs(title = "Hematocrit")
+p7 <- ggplot(mimic_icu_cohort, aes(x = `White Blood Cells`, y = los)) +
+  geom_point() + labs(title = "White Blood Cell Count")
+p8 <- ggplot(mimic_icu_cohort, aes(x = Glucose, y = los)) +
+  geom_point() + labs(title = "Glucose")
+
+p_combined <- p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 
+
+p_combined <- p_combined + plot_layout(ncol = 2) 
+
+p_combined
+
+```
+
+There are points with N/A values and have been removed. The scatter plots visualize the lengths of ICU stays categorized by the last available lab measurements before the ICU stay. I observed a variety of distributions in the relationship between the last available lab measurements before ICU stay and the length of stay in the ICU. The data for Creatinine, Glucose, and White Blood Cell Count appear to be right-skewed, indicating that while most patients have lower values, there's a long tail of patients with higher measurements. Sodium, Chloride and bicarbonate appears to be normal indicates most patients have the mean value of these four numbers. Overall, these patterns suggest that higher lab measurements are not associated with longer ICU stays. But lower lab measurements are associated with longer ICU stays for glucose and white blood cell count and creatinine.
 
 - Length of ICU stay los vs the first vital measurements within the ICU stay
 
-- Length of ICU stay `los` vs first ICU unit
+```{r, eval = TRUE}
+p_heart_rate <- ggplot(mimic_icu_cohort, aes(x = `Heart Rate`, y = los)) +
+  geom_point() +
+  coord_cartesian(xlim = c(0, 300)) +
+  labs(title = "Heart Rate vs Length of ICU Stay",
+       x = "First Heart Rate (bpm)", y = "Length of ICU Stay (days)")
+
+# Scatter plot for systolic blood pressure with x-axis limits
+p_systolic_bp <- ggplot(mimic_icu_cohort, aes(x = `Non Invasive Blood Pressure systolic`, y = los)) +
+  geom_point() +
+  coord_cartesian(xlim = c(0, 500)) +
+  labs(title = "Systolic BP vs Length of ICU Stay",
+       x = "First Systolic BP (mmHg)", y = "Length of ICU Stay (days)")
+
+# Scatter plot for diastolic blood pressure with x-axis limits
+p_diastolic_bp <- ggplot(mimic_icu_cohort, 
+                         aes(x = `Non Invasive Blood Pressure diastolic`,
+                             y = los)) +
+  geom_point() +
+  coord_cartesian(xlim = c(0, 1000)) +
+  labs(title = "Diastolic BP vs Length of ICU Stay",
+       x = "First Diastolic BP (mmHg)", y = "Length of ICU Stay (days)")
+
+# Scatter plot for body temperature with x-axis limits
+p_temperature_f <- ggplot(mimic_icu_cohort,
+                          aes(x = `Temperature Fahrenheit`, y = los)) +
+  geom_point() +
+  coord_cartesian(xlim = c(0, 120)) +
+  labs(title = "Body Temperature vs Length of ICU Stay",
+       x = "First Body Temperature (°F)", y = "Length of ICU Stay (days)")
+
+# Scatter plot for respiratory rate (no change in x-axis limits)
+p_respiratory_rate <- ggplot(mimic_icu_cohort,
+                             aes(x = `Respiratory Rate`, y = los)) +
+  geom_point() +
+  labs(title = "Respiratory Rate vs Length of ICU Stay",
+       x = "First Respiratory Rate (breaths/min)",
+       y = "Length of ICU Stay (days)")
+
+# Combine the plots
+p_combined <- p_heart_rate | p_systolic_bp | p_diastolic_bp |
+  p_temperature_f | p_respiratory_rate
+p_combined + plot_layout(ncol = 3, nrow = 2)
+```
+
+I have restricted some of the outliers from all graphs. Because it makes no sense to have body temperature at 1000 degrees Fahrenheit things like this.
+
+The first graph shows the relationship between the first heart rate measurement and the length of ICU stay. First heart beat rate around 100 has the longest stay in ICU. The second graph shows the relationship between the first systolic blood pressure measurement and the length of ICU stay. BP around 100 tent to have the logest stay. The third graph shows the relationship between the first diastolic blood pressure measurement and the length of ICU stay and have similar pattern. The fourth graph shows the relationship between the first body temperature measurement and the length of ICU stay. Body temperature around 100 tend to have longest icu stay. The fifth graph shows the relationship between the first respiratory rate measurement and the length of ICU stay. Breath around 25 breaths/min tend to have the longest stay in ICU.
+
+- Length of ICU stay `los` vs first ICU 
+
+```{r, eval = TRUE}
+library(ggplot2)
+
+# Create a boxplot of ICU stay length by the first ICU unit
+p_first_care_unit <- ggplot(mimic_icu_cohort, aes(x = first_careunit,
+                                                  y = los)) +
+  geom_boxplot() +
+  labs(title = "Length of ICU Stay by First Care Unit",
+       x = "First ICU Unit",
+       y = "Length of ICU Stay (days)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x labels for better readability
+
+# Print the plot
+print(p_first_care_unit)
+```
+I created a boxplot to visualize the distribution of ICU stay lengths by the first ICU unit. The plot shows that the median length of stay is fairly consistent across different ICU units, with the exception of the Neuro SICU unit, which has a slightly longer upper quantile stay. The plot also shows that there are less patients stayed at Neuro Intermediate Care Unit and Neuro Stepdown.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
