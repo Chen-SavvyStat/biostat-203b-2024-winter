@@ -25,7 +25,7 @@ memuse::Sys.meminfo()
 ```
 
 Load database libraries and the tidyverse frontend:
-```{r}
+```{r, eval = TRUE}
 library(bigrquery)
 library(dbplyr)
 library(DBI)
@@ -46,7 +46,7 @@ Authenticate with BigQuery using the service account token. Please place the ser
 satoken <- "biostat-203b-2024-winter-313290ce47a6.json"
 # BigQuery authentication using service account
 bq_auth(path = satoken)
-```
+```                                  
 Connect to BigQuery database `mimic4_v2_2` in GCP (Google Cloud Platform), using the project billing account `biostat-203b-2024-winter`.
 ```{r}
 # connect to the BigQuery database `biostat-203b-2024-winter.mimic4_v2_2`
@@ -62,6 +62,25 @@ List all tables in the `mimic4_v2_2` database.
 ```{r}
 dbListTables(con_bq)
 ```
+
+**Answer**
+```{r, eval = TRUE}
+# Step 1: Authenticate with BigQuery using the service account token
+# Ensure the service account token file is in your current working directory
+satoken <- "biostat-203b-2024-winter-313290ce47a6.json"
+bq_auth(path = satoken)
+
+# Step 2: Connect to the BigQuery database mimic4_v2_2
+con_bq <- dbConnect(
+    bigrquery::bigquery(),
+    project = "biostat-203b-2024-winter",
+    dataset = "mimic4_v2_2",
+    billing = "biostat-203b-2024-winter"
+)
+
+dbListTables(con_bq)
+```
+
 ### Q1.2 `icustays` data
 
 Connect to the `icustays` table.
@@ -72,12 +91,28 @@ icustays_tble <- tbl(con_bq, "icustays") |>
   print(width = Inf)
 ```
 
+***Answer***
+
+```{r, eval = TRUE}
+icustays_tble <- tbl(con_bq, "icustays") |>
+  show_query() |>
+  print(width = Inf)
+```
+
+
 ### Q1.3 `admissions` data
 
 Connect to the `admissions` table.
 ```{r}
 # # TODO
 # admissions_tble <- 
+```
+
+**Answer**
+```{r, eval = TRUE}
+admissions_tble <- tbl(con_bq, "admissions") |>
+  show_query() |>
+  print(width = Inf)
 ```
 
 ### Q1.4 `patients` data
