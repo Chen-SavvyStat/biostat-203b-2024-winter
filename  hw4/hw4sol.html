@@ -3031,7 +3031,10 @@ vertical-align: -.125em;
   <li><a href="#q1.3-admissions-data" id="toc-q1.3-admissions-data" class="nav-link" data-scroll-target="#q1.3-admissions-data">Q1.3 <code>admissions</code> data</a></li>
   <li><a href="#q1.4-patients-data" id="toc-q1.4-patients-data" class="nav-link" data-scroll-target="#q1.4-patients-data">Q1.4 <code>patients</code> data</a></li>
   <li><a href="#q1.5-labevents-data" id="toc-q1.5-labevents-data" class="nav-link" data-scroll-target="#q1.5-labevents-data">Q1.5 <code>labevents</code> data</a></li>
+  <li><a href="#q1.6-chartevents-data" id="toc-q1.6-chartevents-data" class="nav-link" data-scroll-target="#q1.6-chartevents-data">Q1.6 <code>chartevents</code> data</a></li>
   <li><a href="#q1.7-put-things-together" id="toc-q1.7-put-things-together" class="nav-link" data-scroll-target="#q1.7-put-things-together">Q1.7 Put things together</a></li>
+  <li><a href="#q1.8-preprocessing" id="toc-q1.8-preprocessing" class="nav-link" data-scroll-target="#q1.8-preprocessing">Q1.8 Preprocessing</a></li>
+  <li><a href="#q1.9-save-the-final-tibble" id="toc-q1.9-save-the-final-tibble" class="nav-link" data-scroll-target="#q1.9-save-the-final-tibble">Q1.9 Save the final tibble</a></li>
   </ul></li>
   <li><a href="#q2.-shiny-app" id="toc-q2.-shiny-app" class="nav-link" data-scroll-target="#q2.-shiny-app">Q2. Shiny app</a></li>
   </ul>
@@ -3301,13 +3304,9 @@ FROM `admissions`
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>patients_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;patients&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">|&gt;</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT *
-FROM `patients`
-# Source:   table&lt;patients&gt; [?? x 6]
+<pre><code># Source:   table&lt;patients&gt; [?? x 6]
 # Database: BigQueryConnection
    subject_id gender anchor_age anchor_year anchor_year_group dod   
         &lt;int&gt; &lt;chr&gt;       &lt;int&gt;       &lt;int&gt; &lt;chr&gt;             &lt;date&gt;
@@ -3323,64 +3322,451 @@ FROM `patients`
 10   11776346 F              18        2110 2008 - 2010       NA    
 # ℹ more rows</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>patients_tble <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">|&gt;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;SQL&gt;
+SELECT count(*) AS `n`
+FROM `patients`
+# Source:   SQL [1 x 1]
+# Database: BigQueryConnection
+       n
+   &lt;int&gt;
+1 299712</code></pre>
+</div>
 </div>
 </section>
 <section id="q1.5-labevents-data" class="level3">
 <h3 class="anchored" data-anchor-id="q1.5-labevents-data">Q1.5 <code>labevents</code> data</h3>
 <p>Connect to the <code>labevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the lab items listed in HW3. Only keep the last lab measurements before the ICU stay and pivot lab items to become variables/columns. Write all steps in <em>one</em> chain of pipes.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # </span><span class="al">TODO</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># labevents_tble &lt;- </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # </span><span class="al">TODO</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># labevents_tble &lt;- </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Answer</strong></p>
-<pre><code>
-### Q1.6 `chartevents` data
-
-Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW3. Only keep the first chart events during ICU stay and pivot chart events to become variables/columns. Write all steps in _one_ chain of pipes.
-::: {.cell}
-
-```{.r .cell-code}
-# # TODO
-# chartevents_tble &lt;- </code></pre>
-<p>:::</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>lab_item_ids <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">50912</span>, <span class="dv">50971</span>, <span class="dv">50983</span>, <span class="dv">50902</span>, <span class="dv">50882</span>, <span class="dv">51221</span>, <span class="dv">51301</span>, <span class="dv">50931</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>d_labitems_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;d_labitems&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> lab_item_ids) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>fluid, <span class="sc">-</span>category)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>d_labitems_tble <span class="sc">%&gt;%</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;SQL&gt;
+SELECT count(*) AS `n`
+FROM (
+  SELECT `itemid`, `label`
+  FROM `d_labitems`
+  WHERE (`itemid` IN (50912.0, 50971.0, 50983.0, 50902.0, 50882.0, 51221.0, 51301.0, 50931.0))
+) `q01`
+# Source:   SQL [1 x 1]
+# Database: BigQueryConnection
+      n
+  &lt;int&gt;
+1     8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d_labitems_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:   SQL [8 x 2]
+# Database: BigQueryConnection
+  itemid label            
+   &lt;int&gt; &lt;chr&gt;            
+1  50882 Bicarbonate      
+2  50902 Chloride         
+3  50912 Creatinine       
+4  50931 Glucose          
+5  50971 Potassium        
+6  50983 Sodium           
+7  51221 Hematocrit       
+8  51301 White Blood Cells</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;labevents&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subject_id, itemid, storetime, valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> lab_item_ids) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    icustays_tble, subject_id, stay_id, intime</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    ), <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(storetime <span class="sc">&lt;</span> intime) <span class="sc">%&gt;%</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subject_id, stay_id, itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> storetime, <span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(d_labitems_tble, <span class="at">by =</span> <span class="st">&quot;itemid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>storetime, <span class="sc">-</span>intime, <span class="sc">-</span>itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> label, <span class="at">values_from =</span> valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(subject_id) </span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="sc">%&gt;%</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ORDER BY is ignored in subqueries without LIMIT
+ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;SQL&gt;
+SELECT count(*) AS `n`
+FROM (
+  SELECT
+    `subject_id`,
+    `stay_id`,
+    MAX(IF(`label` = &#39;Glucose&#39;, `valuenum`, NULL)) AS `Glucose`,
+    MAX(IF(`label` = &#39;Potassium&#39;, `valuenum`, NULL)) AS `Potassium`,
+    MAX(IF(`label` = &#39;White Blood Cells&#39;, `valuenum`, NULL)) AS `White Blood Cells`,
+    MAX(IF(`label` = &#39;Creatinine&#39;, `valuenum`, NULL)) AS `Creatinine`,
+    MAX(IF(`label` = &#39;Bicarbonate&#39;, `valuenum`, NULL)) AS `Bicarbonate`,
+    MAX(IF(`label` = &#39;Chloride&#39;, `valuenum`, NULL)) AS `Chloride`,
+    MAX(IF(`label` = &#39;Hematocrit&#39;, `valuenum`, NULL)) AS `Hematocrit`,
+    MAX(IF(`label` = &#39;Sodium&#39;, `valuenum`, NULL)) AS `Sodium`
+  FROM (
+    SELECT `subject_id`, `valuenum`, `stay_id`, `label`
+    FROM (
+      SELECT
+        `subject_id`,
+        `itemid`,
+        `storetime`,
+        `valuenum`,
+        `stay_id`,
+        `intime`
+      FROM (
+        SELECT
+          `q01`.*,
+          RANK() OVER (PARTITION BY `subject_id`, `stay_id`, `itemid` ORDER BY `storetime` DESC) AS `col01`
+        FROM (
+          SELECT `LHS`.*, `stay_id`, `intime`
+          FROM (
+            SELECT `subject_id`, `itemid`, `storetime`, `valuenum`
+            FROM `labevents`
+            WHERE (`itemid` IN (50912.0, 50971.0, 50983.0, 50902.0, 50882.0, 51221.0, 51301.0, 50931.0))
+          ) `LHS`
+          LEFT JOIN `icustays`
+            ON (`LHS`.`subject_id` = `icustays`.`subject_id`)
+        ) `q01`
+        WHERE (`storetime` &lt; `intime`)
+      ) `q01`
+      WHERE (`col01` &lt;= 1)
+    ) `LHS`
+    LEFT JOIN (
+      SELECT `itemid`, `label`
+      FROM `d_labitems`
+      WHERE (`itemid` IN (50912.0, 50971.0, 50983.0, 50902.0, 50882.0, 51221.0, 51301.0, 50931.0))
+    ) `RHS`
+      ON (`LHS`.`itemid` = `RHS`.`itemid`)
+  ) `q01`
+  GROUP BY `subject_id`, `stay_id`
+) `q01`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ORDER BY is ignored in subqueries without LIMIT
+ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:     SQL [1 x 1]
+# Database:   BigQueryConnection
+# Ordered by: subject_id
+      n
+  &lt;int&gt;
+1 68467</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(labevents_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:     SQL [?? x 10]
+# Database:   BigQueryConnection
+# Ordered by: subject_id
+   subject_id  stay_id Glucose Potassium `White Blood Cells` Creatinine
+        &lt;int&gt;    &lt;int&gt;   &lt;dbl&gt;     &lt;dbl&gt;               &lt;dbl&gt;      &lt;dbl&gt;
+ 1   10000032 39553978     102       6.7                 6.9        0.7
+ 2   10000980 39765666      89       3.9                 5.3        2.3
+ 3   10001217 37067082     112       4.2                15.7        0.6
+ 4   10001217 34592300      87       4.1                 5.4        0.5
+ 5   10001725 31205490      NA       4.1                NA         NA  
+ 6   10001884 37510196     141       4.5                12.2        1.1
+ 7   10002013 39060235     288       3.5                 7.2        0.9
+ 8   10002155 33685454     138       4.6                 7.9        1.1
+ 9   10002155 31090461     117       4.9                17.9        2.8
+10   10002155 32358465     133       5.7                 9.8        1.4
+   Bicarbonate Chloride Hematocrit Sodium
+         &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+ 1          25       95       41.1    126
+ 2          21      109       27.3    144
+ 3          22      108       38.1    142
+ 4          30      104       37.4    142
+ 5          NA       98       NA      139
+ 6          30       88       39.7    130
+ 7          24      102       34.9    137
+ 8          24      105       39.7    139
+ 9          23       98       25.5    135
+10          26       85       22.4    120
+# ℹ more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure d_labitems_tble is defined correctly for filtering labevents</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>d_labitems_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;d_labitems&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> <span class="fu">c</span>(</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">50912</span>, <span class="dv">50971</span>, <span class="dv">50983</span>, <span class="dv">50902</span>, <span class="dv">50882</span>, <span class="dv">51221</span>, <span class="dv">51301</span>, <span class="dv">50931</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;labevents&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subject_id, itemid, storetime, valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(d_labitems_tble, <span class="at">by =</span> <span class="st">&quot;itemid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(icustays_tble, <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(icustays_tble, subject_id, stay_id, intime), <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(storetime <span class="sc">&lt;</span> intime) <span class="sc">%&gt;%</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subject_id, stay_id, itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> storetime, <span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>storetime, <span class="sc">-</span>intime) <span class="sc">%&gt;%</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> itemid, <span class="at">values_from =</span> valuenum)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Print and summarise labevents_tble</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>labevents_tble <span class="sc">%&gt;%</span></span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(labevents_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="q1.6-chartevents-data" class="level3">
+<h3 class="anchored" data-anchor-id="q1.6-chartevents-data">Q1.6 <code>chartevents</code> data</h3>
+<p>Connect to <code>chartevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the chart events listed in HW3. Only keep the first chart events during ICU stay and pivot chart events to become variables/columns. Write all steps in <em>one</em> chain of pipes.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # </span><span class="al">TODO</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># chartevents_tble &lt;- </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p><strong>Answer</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>chart_item_ids <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">220045</span>, <span class="dv">220179</span>, <span class="dv">220180</span>, <span class="dv">223761</span>, <span class="dv">220210</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>d_items_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;d_items&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> chart_item_ids) <span class="sc">%&gt;%</span> </span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(itemid, label)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>d_items_tble <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;SQL&gt;
+SELECT count(*) AS `n`
+FROM (
+  SELECT `itemid`, `label`
+  FROM `d_items`
+  WHERE (`itemid` IN (220045.0, 220179.0, 220180.0, 223761.0, 220210.0))
+) `q01`
+# Source:   SQL [1 x 1]
+# Database: BigQueryConnection
+      n
+  &lt;int&gt;
+1     5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(d_items_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:   SQL [5 x 2]
+# Database: BigQueryConnection
+  itemid label                                
+   &lt;int&gt; &lt;chr&gt;                                
+1 220210 Respiratory Rate                     
+2 220045 Heart Rate                           
+3 220179 Non Invasive Blood Pressure systolic 
+4 220180 Non Invasive Blood Pressure diastolic
+5 223761 Temperature Fahrenheit               </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>chartevents_tble <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con_bq, <span class="st">&quot;chartevents&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subject_id, itemid, charttime, valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(itemid <span class="sc">%in%</span> chart_item_ids) <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    icustays_tble, subject_id, stay_id, intime, outtime</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    ), <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(charttime <span class="sc">&gt;=</span> intime <span class="sc">&amp;</span> charttime <span class="sc">&lt;=</span> outtime) <span class="sc">%&gt;%</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(subject_id, stay_id, itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_min</span>(<span class="at">order_by =</span> charttime, <span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(d_items_tble, <span class="at">by =</span> <span class="st">&quot;itemid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>charttime, <span class="sc">-</span>intime, <span class="sc">-</span>itemid) <span class="sc">%&gt;%</span></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> label, <span class="at">values_from =</span> valuenum) <span class="sc">%&gt;%</span></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(subject_id)</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>chartevents_tble <span class="sc">%&gt;%</span></span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_query</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ORDER BY is ignored in subqueries without LIMIT
+ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;SQL&gt;
+SELECT count(*) AS `n`
+FROM (
+  SELECT
+    `subject_id`,
+    `stay_id`,
+    `outtime`,
+    MAX(IF(`label` = &#39;Respiratory Rate&#39;, `valuenum`, NULL)) AS `Respiratory Rate`,
+    MAX(IF(`label` = &#39;Temperature Fahrenheit&#39;, `valuenum`, NULL)) AS `Temperature Fahrenheit`,
+    MAX(IF(`label` = &#39;Heart Rate&#39;, `valuenum`, NULL)) AS `Heart Rate`,
+    MAX(IF(`label` = &#39;Non Invasive Blood Pressure systolic&#39;, `valuenum`, NULL)) AS `Non Invasive Blood Pressure systolic`,
+    MAX(IF(`label` = &#39;Non Invasive Blood Pressure diastolic&#39;, `valuenum`, NULL)) AS `Non Invasive Blood Pressure diastolic`
+  FROM (
+    SELECT `subject_id`, `valuenum`, `stay_id`, `outtime`, `label`
+    FROM (
+      SELECT
+        `subject_id`,
+        `itemid`,
+        `charttime`,
+        `valuenum`,
+        `stay_id`,
+        `intime`,
+        `outtime`
+      FROM (
+        SELECT
+          `q01`.*,
+          RANK() OVER (PARTITION BY `subject_id`, `stay_id`, `itemid` ORDER BY `charttime`) AS `col01`
+        FROM (
+          SELECT `LHS`.*, `stay_id`, `intime`, `outtime`
+          FROM (
+            SELECT `subject_id`, `itemid`, `charttime`, `valuenum`
+            FROM `chartevents`
+            WHERE (`itemid` IN (220045.0, 220179.0, 220180.0, 223761.0, 220210.0))
+          ) `LHS`
+          LEFT JOIN `icustays`
+            ON (`LHS`.`subject_id` = `icustays`.`subject_id`)
+        ) `q01`
+        WHERE (`charttime` &gt;= `intime` AND `charttime` &lt;= `outtime`)
+      ) `q01`
+      WHERE (`col01` &lt;= 1)
+    ) `LHS`
+    LEFT JOIN (
+      SELECT `itemid`, `label`
+      FROM `d_items`
+      WHERE (`itemid` IN (220045.0, 220179.0, 220180.0, 223761.0, 220210.0))
+    ) `RHS`
+      ON (`LHS`.`itemid` = `RHS`.`itemid`)
+  ) `q01`
+  GROUP BY `subject_id`, `stay_id`, `outtime`
+) `q01`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ORDER BY is ignored in subqueries without LIMIT
+ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:     SQL [1 x 1]
+# Database:   BigQueryConnection
+# Ordered by: subject_id
+      n
+  &lt;int&gt;
+1 73164</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(chartevents_tble, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:     SQL [?? x 8]
+# Database:   BigQueryConnection
+# Ordered by: subject_id
+   subject_id  stay_id outtime             `Respiratory Rate`
+        &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;                           &lt;dbl&gt;
+ 1   10000032 39553978 2180-07-23 23:50:47                 24
+ 2   10000980 39765666 2189-06-27 20:38:27                 23
+ 3   10001217 37067082 2157-11-21 22:08:00                 18
+ 4   10001217 34592300 2157-12-20 14:27:41                 11
+ 5   10001725 31205490 2110-04-12 23:59:56                 19
+ 6   10001884 37510196 2131-01-20 08:27:30                 10
+ 7   10002013 39060235 2160-05-19 17:33:33                 14
+ 8   10002155 33685454 2129-08-10 17:02:38                 18
+ 9   10002155 31090461 2130-09-27 22:13:41                 18
+10   10002155 32358465 2131-03-10 18:09:21                 23
+   `Temperature Fahrenheit` `Heart Rate` `Non Invasive Blood Pressure systolic`
+                      &lt;dbl&gt;        &lt;dbl&gt;                                  &lt;dbl&gt;
+ 1                     98.7           91                                     84
+ 2                     98             77                                    150
+ 3                     98.5           86                                    151
+ 4                     97.6           96                                    167
+ 5                     97.7           55                                     73
+ 6                     98.1           38                                    180
+ 7                     97.2           80                                    104
+ 8                     95.9           68                                    126
+ 9                     96.9           94                                    118
+10                     97.7           98                                    109
+   `Non Invasive Blood Pressure diastolic`
+                                     &lt;dbl&gt;
+ 1                                      48
+ 2                                      77
+ 3                                      90
+ 4                                      95
+ 5                                      56
+ 6                                      12
+ 7                                      70
+ 8                                      61
+ 9                                      51
+10                                      65
+# ℹ more rows</code></pre>
+</div>
+</div>
 </section>
 <section id="q1.7-put-things-together" class="level3">
 <h3 class="anchored" data-anchor-id="q1.7-put-things-together">Q1.7 Put things together</h3>
 <p>This step is similar to Q7 of HW3. Using <em>one</em> chain of pipes <code>|&gt;</code> to perform following data wrangling steps: (i) start with the <code>icustays_tble</code>, (ii) merge in admissions and patients tables, (iii) keep adults only (age at ICU intime &gt;= 18), (iv) merge in the labevents and chartevents tables, (v) <code>collect</code> the tibble.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # </span><span class="al">TODO</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># mimic_icu_cohort &lt;- </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # </span><span class="al">TODO</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="co"># mimic_icu_cohort &lt;- </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Answer</strong></p>
-<pre><code>
-### Q1.8 Preprocessing
-
-Perform the following preprocessing steps. (i) Lump infrequent levels into &quot;Other&quot; level for `first_careunit`, `last_careunit`, `admission_type`, `admission_location`, and `discharge_location`. (ii) Collapse the levels of `race` into `ASIAN`, `BLACK`, `HISPANIC`, `WHITE`, and `Other`. (iii) Create a new variable `los_long` that is `TRUE` when `los` is greater than or equal to 2 days. (iv) Summarize the data using `tbl_summary()`, stratified by `los_long`. Hint: `fct_lump` and `fct_collapse` from the `forcats` package can be useful.
-
-Hint: Below is a numerical summary of my tibble after preprocessing:
-
-&lt;iframe width=95% height=&quot;500&quot; src=&quot;./mimic_icu_cohort_gtsummary.html&quot;&gt;&lt;/iframe&gt;
-
-### Q1.9 Save the final tibble
-
-Save the final tibble to an R data file `mimic_icu_cohort.rds` in the `mimiciv_shiny` folder.
-::: {.cell}
-
-```{.r .cell-code}
-# make a directory mimiciv_shiny
-if (!dir.exists(&quot;mimiciv_shiny&quot;)) {
-  dir.create(&quot;mimiciv_shiny&quot;)
-}
-# save the final tibble
-mimic_icu_cohort |&gt;
-  write_rds(&quot;mimiciv_shiny/mimic_icu_cohort.rds&quot;, compress = &quot;gz&quot;)</code></pre>
-<p>::: Close database connection and clear workspace.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;con_bq&quot;</span>)) {</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dbDisconnect</span>(con_bq)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>mimic_icu_cohort <span class="ot">&lt;-</span> icustays_tble <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 合并 admissions 表</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(admissions_tble, <span class="at">by =</span> <span class="st">&quot;hadm_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 合并 patients 表</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(patients_tble, <span class="at">by =</span> <span class="st">&quot;subject_id&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 计算年龄并筛选成人</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_at_intime =</span> <span class="fu">as.numeric</span>(anchor_age) <span class="sc">+</span> <span class="fu">as.numeric</span>(<span class="fu">as.Date</span>(intime) <span class="sc">%Y%</span> <span class="fu">as.Date</span>(anchor_year))) <span class="sc">%&gt;%</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_at_intime <span class="sc">&gt;=</span> <span class="dv">18</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 合并 labevents 表</span></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(labevents_tble, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;subject_id&quot;</span>, <span class="st">&quot;hadm_id&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 合并 chartevents 表</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(chartevents_tble, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;subject_id&quot;</span>, <span class="st">&quot;hadm_id&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 收集数据到R中</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 打印数据框架</span></span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mimic_icu_cohort, <span class="at">width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="q1.8-preprocessing" class="level3">
+<h3 class="anchored" data-anchor-id="q1.8-preprocessing">Q1.8 Preprocessing</h3>
+<p>Perform the following preprocessing steps. (i) Lump infrequent levels into “Other” level for <code>first_careunit</code>, <code>last_careunit</code>, <code>admission_type</code>, <code>admission_location</code>, and <code>discharge_location</code>. (ii) Collapse the levels of <code>race</code> into <code>ASIAN</code>, <code>BLACK</code>, <code>HISPANIC</code>, <code>WHITE</code>, and <code>Other</code>. (iii) Create a new variable <code>los_long</code> that is <code>TRUE</code> when <code>los</code> is greater than or equal to 2 days. (iv) Summarize the data using <code>tbl_summary()</code>, stratified by <code>los_long</code>. Hint: <code>fct_lump</code> and <code>fct_collapse</code> from the <code>forcats</code> package can be useful.</p>
+<p>Hint: Below is a numerical summary of my tibble after preprocessing:</p>
+<iframe width="95%" height="500" src="./mimic_icu_cohort_gtsummary.html">
+</iframe>
+</section>
+<section id="q1.9-save-the-final-tibble" class="level3">
+<h3 class="anchored" data-anchor-id="q1.9-save-the-final-tibble">Q1.9 Save the final tibble</h3>
+<p>Save the final tibble to an R data file <code>mimic_icu_cohort.rds</code> in the <code>mimiciv_shiny</code> folder.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make a directory mimiciv_shiny</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">&quot;mimiciv_shiny&quot;</span>)) {</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dir.create</span>(<span class="st">&quot;mimiciv_shiny&quot;</span>)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="co"># save the final tibble</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>mimic_icu_cohort <span class="sc">|&gt;</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_rds</span>(<span class="st">&quot;mimiciv_shiny/mimic_icu_cohort.rds&quot;</span>, <span class="at">compress =</span> <span class="st">&quot;gz&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Close database connection and clear workspace.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">exists</span>(<span class="st">&quot;con_bq&quot;</span>)) {</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dbDisconnect</span>(con_bq)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Although it is not a good practice to add big data files to git, for grading purpose, please add <code>mimic_icu_cohort.rds</code> to your git repository.</p>
 </section>
