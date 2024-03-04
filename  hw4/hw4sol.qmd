@@ -96,9 +96,13 @@ icustays_tble <- tbl(con_bq, "icustays") |>
 ***Answer***
 
 ```{r, eval = TRUE}
-icustays_tble <- tbl(con_bq, "icustays") |>
-  show_query() |>
+icustays_tble <- tbl(con_bq, "icustays") |> 
   print(width = Inf)
+
+icustays_tble |> 
+  summarise(n = n()) |>
+  show_query() |>
+  print()
 ```
 
 
@@ -113,8 +117,12 @@ Connect to the `admissions` table.
 **Answer**
 ```{r, eval = TRUE}
 admissions_tble <- tbl(con_bq, "admissions") |>
-  show_query() |>
   print(width = Inf)
+
+admissions_tble |>
+  summarise(n = n()) |>
+  show_query() |>
+  print()
 ```
 
 ### Q1.4 `patients` data
@@ -139,6 +147,10 @@ Connect to the `labevents` table and retrieve a subset that only contain subject
 # labevents_tble <- 
 ```
 
+**Answer**
+
+```
+
 ### Q1.6 `chartevents` data
 
 Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW3. Only keep the first chart events during ICU stay and pivot chart events to become variables/columns. Write all steps in _one_ chain of pipes.
@@ -147,6 +159,8 @@ Connect to `chartevents` table and retrieve a subset that only contain subjects 
 # chartevents_tble <- 
 ```
 
+**Answer**
+
 ### Q1.7 Put things together
 
 This step is similar to Q7 of HW3. Using _one_ chain of pipes `|>` to perform following data wrangling steps: (i) start with the `icustays_tble`, (ii) merge in admissions and patients tables, (iii) keep adults only (age at ICU intime >= 18), (iv) merge in the labevents and chartevents tables, (v) `collect` the tibble.
@@ -154,6 +168,10 @@ This step is similar to Q7 of HW3. Using _one_ chain of pipes `|>` to perform fo
 ```{r}
 # # TODO
 # mimic_icu_cohort <- 
+```
+
+**Answer**
+
 ```
 
 ### Q1.8 Preprocessing
@@ -189,7 +207,6 @@ Although it is not a good practice to add big data files to git, for grading pur
 
 Develop a Shiny app for exploring the ICU cohort data created in Q1. The app should reside in the `mimiciv_shiny` folder. The app should contain at least two tabs. One tab provides easy access to the graphical and numerical summaries of variables (demographics, lab measurements, vitals) in the ICU cohort. The other allows user to choose a specific patient in the cohort and display the patient's ADT and ICU stay information as we did in Q1 of HW3.
 
-![](Q2example1.png)
-![](Q2example2.png)
 
-![](Q2example3.png)
+
+
