@@ -281,23 +281,45 @@ Perform the following preprocessing steps. (i) Lump infrequent levels into "Othe
 
 **Answer**
 ```{r, eval = TRUE}
-mimic_icu_cohort_prep <- mimic_icu_cohort %>%
-  select(first_careunit, last_careunit, los, admission_type, admission_location, discharge_location, insurance, language, marital_status, race, hospital_expire_flag, gender, dod, 'Sodium', 'Chloride', 'Creatinine', 'Potassium', 'Glucose', 'Hematocrit', 'White Blood Cells', 'Bicarbonate', 'Temperature Fahrenheit', 'Non Invasive Blood Pressure diastolic', 'Respiratory Rate', 'Non Invasive Blood Pressure systolic', 'Heart Rate', age_at_intime)
-
-mimic_icu_cohort_preprocessed <- mimic_icu_cohort_prep %>%
+mimic_icu_cohort <- mimic_icu_cohort %>%
+  select(first_careunit, last_careunit, los, admission_type, 
+         admission_location, discharge_location, insurance, language, 
+         marital_status, race, hospital_expire_flag, gender, dod, 
+         'Sodium', 'Chloride', 'Creatinine', 'Potassium', 'Glucose', 
+         'Hematocrit', 'White Blood Cells', 'Bicarbonate', 
+         'Temperature Fahrenheit', 'Non Invasive Blood Pressure diastolic', 
+         'Respiratory Rate', 'Non Invasive Blood Pressure systolic', 
+         'Heart Rate', age_at_intime) %>%
   mutate(
-    first_careunit = fct_lump(first_careunit, n = 4, w = NULL, other_level = "Other"),
-    last_careunit = fct_lump(last_careunit, n = 4, w = NULL, other_level = "Other"),
-    admission_type = fct_lump(admission_type, n = 4, w = NULL, other_level = "Other"),
-    admission_location = fct_lump(admission_location, n = 4, w = NULL, other_level = "Other"),
-    discharge_location = fct_lump(discharge_location, n = 4, w = NULL, other_level = "Other"),
+    first_careunit = fct_lump(first_careunit, n = 4, w = NULL, 
+                              other_level = "Other"),
+    last_careunit = fct_lump(last_careunit, n = 4, w = NULL, 
+                             other_level = "Other"),
+    admission_type = fct_lump(admission_type, n = 4, w = NULL, 
+                              other_level = "Other"),
+    admission_location = fct_lump(admission_location, n = 4, w = NULL, 
+                                  other_level = "Other"),
+    discharge_location = fct_lump(discharge_location, n = 4, w = NULL, 
+                                  other_level = "Other"),
 race = fct_collapse(
       race,
-      ASIAN = c("ASIAN", "ASIAN - ASIAN INDIAN", "ASIAN - CHINESE", "ASIAN - KOREAN", "ASIAN - SOUTH EAST ASIAN"),
-      BLACK = c("BLACK/AFRICAN", "BLACK/AFRICAN AMERICAN", "BLACK/CAPE VERDEAN", "BLACK/CARIBBEAN ISLAND"),
-      HISPANIC = c("HISPANIC OR LATINO", "HISPANIC/LATINO - CENTRAL AMERICAN", "HISPANIC/LATINO - COLUMBIAN", "HISPANIC/LATINO - CUBAN", "HISPANIC/LATINO - DOMINICAN", "HISPANIC/LATINO - GUATEMALAN", "HISPANIC/LATINO - HONDURAN", "HISPANIC/LATINO - MEXICAN", "HISPANIC/LATINO - PUERTO RICAN", "HISPANIC/LATINO - SALVADORAN"),
-      WHITE = c("WHITE", "WHITE - BRAZILIAN", "WHITE - EASTERN EUROPEAN", "WHITE - OTHER EUROPEAN", "WHITE - RUSSIAN"),
-      Other = c("AMERICAN INDIAN/ALASKA NATIVE", "MULTIPLE RACE/ETHNICITY", "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER", "OTHER", "PATIENT DECLINED TO ANSWER", "PORTUGUESE", "SOUTH AMERICAN", "UNABLE TO OBTAIN", "UNKNOWN")
+      ASIAN = c("ASIAN", "ASIAN - ASIAN INDIAN", "ASIAN - CHINESE", 
+                "ASIAN - KOREAN", "ASIAN - SOUTH EAST ASIAN"),
+      BLACK = c("BLACK/AFRICAN", "BLACK/AFRICAN AMERICAN", 
+                "BLACK/CAPE VERDEAN", "BLACK/CARIBBEAN ISLAND"),
+      HISPANIC = c("HISPANIC OR LATINO", "HISPANIC/LATINO - CENTRAL AMERICAN", 
+                   "HISPANIC/LATINO - COLUMBIAN", "HISPANIC/LATINO - CUBAN", 
+                   "HISPANIC/LATINO - DOMINICAN", 
+                   "HISPANIC/LATINO - GUATEMALAN", "HISPANIC/LATINO - HONDURAN", 
+                   "HISPANIC/LATINO - MEXICAN", 
+                   "HISPANIC/LATINO - PUERTO RICAN", 
+                   "HISPANIC/LATINO - SALVADORAN"),
+      WHITE = c("WHITE", "WHITE - BRAZILIAN", "WHITE - EASTERN EUROPEAN", 
+                "WHITE - OTHER EUROPEAN", "WHITE - RUSSIAN"),
+      Other = c("AMERICAN INDIAN/ALASKA NATIVE", "MULTIPLE RACE/ETHNICITY", 
+                "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER", "OTHER", 
+                "PATIENT DECLINED TO ANSWER", "PORTUGUESE", "SOUTH AMERICAN",
+                "UNABLE TO OBTAIN", "UNKNOWN")
     ),
     los_long = los >= 2
   ) %>%
@@ -306,7 +328,7 @@ race = fct_collapse(
     
 
 summary_table <- tbl_summary(
-  mimic_icu_cohort_preprocessed,
+  mimic_icu_cohort,
   by = los_long, # Stratify by `los_long`
   missing = "ifany"
 )
@@ -317,6 +339,7 @@ gt_table <- summary_table %>%
 gtsave(gt_table, filename = "gt_table.html")
 ```  
     
+Table should be saved into the folder directly as `gt_table.html`.
 
 
 ### Q1.9 Save the final tibble
@@ -339,6 +362,23 @@ if (exists("con_bq")) {
 rm(list = ls())
 ```
 Although it is not a good practice to add big data files to git, for grading purpose, please add `mimic_icu_cohort.rds` to your git repository.
+
+**Answer**
+```{r, eval = TRUE}
+if (!dir.exists("mimiciv_shiny")) {
+  dir.create("mimiciv_shiny")
+}
+
+mimic_icu_cohort |>
+  write_rds("mimiciv_shiny/mimic_icu_cohort.rds", compress = "gz")
+```
+
+```{r}
+if (exists("con_bq")) {
+  dbDisconnect(con_bq)
+}
+rm(list = ls())
+```
 
 ## Q2. Shiny app
 
