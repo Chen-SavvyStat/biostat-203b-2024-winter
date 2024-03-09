@@ -426,16 +426,15 @@ ui <- fluidPage(
   )
 )
 
+
 server <- function(input, output) {
   
   data <- readRDS("mimiciv_shiny/mimic_icu_cohort_A.rds")
   filtered_data <- readRDS("mimiciv_shiny/mimic_icu_cohort.rds")
     # Reactive expression that debounces the input
   patient_data <- reactive({
-    # 直接从输入中获取sid，并确保其为数值型
-    sid <- as.numeric(input$sid) # 这里使用UI中的numericInput的ID
+    sid <- as.numeric(input$sid) 
     
-    # 获取数据，以下逻辑不变
     sid_info_query <- tbl(con_bq, "patients") %>% filter(subject_id == sid)
     sid_adt_query <- tbl(con_bq, "transfers") %>% filter(subject_id == sid)
     sid_lab_query <- tbl(con_bq, "labevents") %>% filter(subject_id == sid)
@@ -519,9 +518,8 @@ if("dischtime" %in% names(sid_adm)) {
           axis.line.y = element_line(color = "black", size = 0.5) 
         ) +
         coord_flip()
-      p # 绘制带有X轴和Y轴线条的图形
+      p
     } else if (input$analysisType == "Marital Status") {  
-      # 新的代码部分
       p <- ggplot(data, aes(x = marital_status)) +
         geom_bar() +
         labs(x = "Count", y = "marital status") +
@@ -558,7 +556,6 @@ if("dischtime" %in% names(sid_adm)) {
         coord_flip()
       p
     } else if (input$analysisType == "Vital") {
-  # 从data数据集中提取特定的生命体征变量
   vitals_data <- melt(data, measure.vars = c(
     "Heart Rate", "Non Invasive Blood Pressure systolic", 
     "Non Invasive Blood Pressure diastolic", 
@@ -585,7 +582,6 @@ if("dischtime" %in% names(sid_adm)) {
     coord_flip()
   p
     } else if (input$analysisType == "Insurance") {
-  # 使用filtered_data数据集
   p <- ggplot(filtered_data, aes(x = insurance)) +
     geom_bar(width = 0.5) +
     labs(x = "Insurance Type", y = "Count") +
@@ -660,12 +656,9 @@ output$timeSeriesPlot <- renderPlot({
     theme_light() +
     theme(legend.position = "bottom", legend.box = "vertical")
 })
-
-
 }
 shinyApp(ui, server)
 
-    
 ```
 
 
