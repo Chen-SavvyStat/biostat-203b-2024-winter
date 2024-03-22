@@ -39,3 +39,193 @@ data_split <- initial_split(
 3. Train and tune the models using the training set.
 
 4. Compare model classification performance on the test set. Report both the area under ROC curve and accuracy for each machine learning algorithm and the model stacking. Interpret the results. What are the most important features in predicting long ICU stays? How do the models compare in terms of performance and interpretability?
+
+```{r setup, eval=TRUE}
+suppressPackageStartupMessages({
+library(GGally)
+library(gtsummary)
+library(ranger)
+library(tidyverse)
+library(tidymodels)
+})
+```
+
+```{r, eval=FALSE}
+install.packages("ranger")
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort <- readRDS("mimiciv_icu_cohort.rds") %>%
+  select(
+    -deathtime, -discharge_location, -marital_status,
+    -edregtime, -edouttime, -dod, -intime, -outtime, -admittime, -dischtime,
+    -anchor_age, -anchor_year, -anchor_year_group, -last_careunit,
+    -los, -gender, -age_at_intime
+  )
+colnames(mimiciv_icu_cohort)
+```
+```{r, eval=TRUE}
+mimiciv_icu_cohort |> tbl_summary(by = los_long)
+glimpse(mimiciv_icu_cohort)
+```
+
+```{r, eval=TRUE}
+set.seed(203)
+
+mimiciv_icu_cohort <- mimiciv_icu_cohort |>
+  arrange(subject_id, hadm_id, stay_id)
+
+data_split <- initial_split(
+  mimiciv_icu_cohort, 
+  # stratify by los_long
+  strata = "los_long", 
+  prop = 0.5
+  )
+data_split
+```
+```{r, eval=TRUE}
+mimiciv_icu_cohort_other <- training(data_split) |>
+  select(
+    -subject_id, -hadm_id, -stay_id)
+dim(mimiciv_icu_cohort_other)
+
+mimiciv_icu_cohort_test <- testing(data_split)|>
+  select(
+    -subject_id, -hadm_id, -stay_id)
+dim(mimiciv_icu_cohort_test)
+```
+
+```{r, eval=TRUE}
+rf_recipe <- 
+  recipe(
+    los_long ~ .,
+    data = mimiciv_icu_cohort_other
+  ) |>
+  step_impute_mean('Bicarbonate', 'Chloride', 'Creatinine', 'Potassium', 
+                   'Sodium', 'Hematocrit', 'White Blood Cells', 'Heart Rate', 
+                   'Non Invasive Blood Pressure systolic', 
+                   'Non Invasive Blood Pressure diastolic',
+                   'Respiratory Rate', 'Temperature Fahrenheit', 'Glucose') |>
+  #step_mutate(
+    #Glucose = replace_na(Glucose, median(Glucose, na.rm = TRUE)),
+    #role = "predictor") |>
+  #step_dummy(all_nominal_predictors()) |>
+  step_zv(all_numeric_predictors()) |> 
+  #step_normalize(all_numeric_predictors()) |>
+  print()
+```
+
+```{r, eval=TRUE}
+rf_mod <- 
+  rand_forest(
+    mode = "classification",
+    # Number of predictors randomly sampled in each split
+    mtry = tune(),
+    # Number of trees in ensemble
+    trees = tune()
+  ) |> 
+  set_engine("ranger")
+rf_mod
+```
+
+```{r, eval=TRUE}
+rf_wf <- workflow() |>
+  add_recipe(rf_recipe) |>
+  add_model(rf_mod)
+rf_wf
+```
+
+```{r, eval=TRUE}
+param_grid <- grid_random(
+  trees(range = c(100L, 500L)), 
+  mtry(range = c(1L, 5L)),
+  size = 10
+)
+param_grid
+```
+
+```{r, eval=TRUE}
+set.seed(203)
+
+folds <- vfold_cv(mimiciv_icu_cohort_other, v = 5)
+folds
+```
+
+```{r, eval=FALSE}
+#control <- control_grid(save_preds = TRUE)
+
+#rf_fit <- rf_wf |>
+  #tune_grid(
+   # resamples = folds,
+    #grid = param_grid,
+    #metrics = metric_set(roc_auc, accuracy),
+    #control = control
+  #)
+
+#saveRDS(rf_fit, "rf_fit_results.rds")
+```
+
+```{r, eval=TRUE}
+rf_fit <- rf_wf |>
+  tune_grid(
+    resamples = folds,
+    grid = param_grid,
+    metrics = metric_set(roc_auc, accuracy),
+    control = control_grid(save_pred = TRUE)  # 确保保存预测结果
+  ) 
+```
+
+```{r, eval=TRUE}
+rf_pred <- rf_fit |>
+  collect_predictions()
+
+saveRDS(rf_pred, "rf_predictions.rds")
+```
+
+```{r, eval=TRUE}
+rf_pred_loaded <- readRDS("rf_predictions.rds")
+str(rf_pred_loaded)
+```
+
+
+
+```{r, eval=TRUE}
+rf_fit |>
+  collect_metrics() |>
+  print(width = Inf) |>
+  filter(.metric == "roc_auc") |>
+  ggplot(mapping = aes(x = trees, y = mean, color = factor(mtry))) +
+  geom_point() + 
+  # geom_line() + 
+  labs(x = "Num. of Trees", y = "CV AUC")
+```
+
+```{r, eval=TRUE}
+rf_fit |>
+  show_best("roc_auc")
+```
+
+```{r, eval=TRUE}
+best_rf <- rf_fit |>
+  select_best("roc_auc")
+best_rf
+```
+
+```{r, eval=TRUE}
+# Final workflow
+final_wf <- rf_wf |>
+  finalize_workflow(best_rf)
+final_wf
+```
+```{r, eval=TRUE}
+final_fit <- 
+  final_wf |>
+  last_fit(data_split)
+final_fit
+```
+
+```{r, eval=TRUE}
+final_fit |> 
+  collect_metrics()
+```
+
