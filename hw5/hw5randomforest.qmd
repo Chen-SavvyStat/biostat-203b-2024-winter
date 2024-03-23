@@ -152,11 +152,11 @@ folds
 ```
 
 ```{r, eval=FALSE}
-#control <- control_grid(save_preds = TRUE)
+#control <- control_grid(save_pred = TRUE)
 
 #rf_fit <- rf_wf |>
   #tune_grid(
-   # resamples = folds,
+    #resamples = folds,
     #grid = param_grid,
     #metrics = metric_set(roc_auc, accuracy),
     #control = control
@@ -165,26 +165,19 @@ folds
 #saveRDS(rf_fit, "rf_fit_results.rds")
 ```
 
+```{r, eval=FALSE}
+#rf_pred_loaded <- readRDS("rf_fit_results.rds")
+#str(rf_pred_loaded)
+```
+
+
 ```{r, eval=TRUE}
 rf_fit <- rf_wf |>
   tune_grid(
     resamples = folds,
     grid = param_grid,
-    metrics = metric_set(roc_auc, accuracy),
-    control = control_grid(save_pred = TRUE)  # 确保保存预测结果
+    metrics = metric_set(roc_auc, accuracy)
   ) 
-```
-
-```{r, eval=TRUE}
-rf_pred <- rf_fit |>
-  collect_predictions()
-
-saveRDS(rf_pred, "rf_predictions.rds")
-```
-
-```{r, eval=TRUE}
-rf_pred_loaded <- readRDS("rf_predictions.rds")
-str(rf_pred_loaded)
 ```
 
 
@@ -202,12 +195,12 @@ rf_fit |>
 
 ```{r, eval=TRUE}
 rf_fit |>
-  show_best("roc_auc")
+  show_best(metric = "roc_auc")
 ```
 
 ```{r, eval=TRUE}
 best_rf <- rf_fit |>
-  select_best("roc_auc")
+  select_best(metric = "roc_auc")
 best_rf
 ```
 
