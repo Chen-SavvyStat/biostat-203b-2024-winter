@@ -1,0 +1,312 @@
+---
+title: "Biostat 203B Homework 5"
+subtitle: Due Mar 22 @ 11:59PM
+author: "Chuanliang Chen, UID: 106152237"
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    number-sections: false
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    code-fold: false
+---
+
+## Predicting ICU duration
+
+Using the ICU cohort `mimiciv_icu_cohort.rds` you built in Homework 4, develop at least three machine learning approaches (logistic regression with enet regularization, random forest, boosting, SVM, MLP, etc) plus a model stacking approach for predicting whether a patient's ICU stay will be longer than 2 days. You should use the `los_long` variable as the outcome. You algorithms can use patient demographic information (gender, age at ICU `intime`, marital status, race), ICU admission information (first care unit), the last lab measurements before the ICU stay, and first vital measurements during ICU stay as features. You are welcome to use any feature engineering techniques you think are appropriate; but make sure to not use features that are not available at an ICU stay's `intime`. For instance, `last_careunit` cannot be used in your algorithms. 
+
+1. Data preprocessing and feature engineering.
+
+2. Partition data into 50% training set and 50% test set. Stratify partitioning according to `los_long`. For grading purpose, sort the data by `subject_id`, `hadm_id`, and `stay_id` and use the seed `203` for the initial data split. Below is the sample code.
+```{r}
+#| eval: false
+set.seed(203)
+
+# sort
+mimiciv_icu_cohort <- mimiciv_icu_cohort |>
+  arrange(subject_id, hadm_id, stay_id)
+
+data_split <- initial_split(
+  mimiciv_icu_cohort, 
+  # stratify by los_long
+  strata = "los_long", 
+  prop = 0.5
+  )
+```
+
+3. Train and tune the models using the training set.
+
+4. Compare model classification performance on the test set. Report both the area under ROC curve and accuracy for each machine learning algorithm and the model stacking. Interpret the results. What are the most important features in predicting long ICU stays? How do the models compare in terms of performance and interpretability?
+
+
+```{r setup, eval=TRUE}
+suppressPackageStartupMessages({
+library(GGally)
+library(gtsummary)
+#library(keras)
+library(ranger)
+library(stacks)
+library(tidyverse)
+library(tidymodels)
+library(xgboost)
+})
+```
+
+```{r, eval=TRUE}
+set.seed(203)
+
+mimiciv_icu_cohort <- readRDS("mimiciv_icu_cohort.rds") %>%
+  select(
+    -deathtime, -discharge_location, -marital_status,
+    -edregtime, -edouttime, -dod, -intime, -outtime, -admittime, -dischtime,
+    -anchor_age, -anchor_year, -anchor_year_group, -last_careunit,
+    -los, -gender, -age_at_intime
+  ) 
+colnames(mimiciv_icu_cohort)
+
+mimiciv_icu_cohort <- mimiciv_icu_cohort |>
+  arrange(subject_id, hadm_id, stay_id)
+
+data_split <- initial_split(
+  mimiciv_icu_cohort, 
+  # stratify by los_long
+  strata = "los_long", 
+  prop = 0.5
+  )
+data_split
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_other <- training(data_split) |>
+  select(
+    -subject_id, -hadm_id, -stay_id)
+dim(mimiciv_icu_cohort_other)
+
+mimiciv_icu_cohort_test <- testing(data_split)|>
+  select(
+    -subject_id, -hadm_id, -stay_id)
+dim(mimiciv_icu_cohort_test)
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_recipe <- 
+  recipe(
+    los_long ~ .,
+    data = mimiciv_icu_cohort_other
+  ) |>
+  step_impute_mean('Bicarbonate', 'Chloride', 'Creatinine', 'Potassium', 
+                   'Sodium', 'Hematocrit', 'White Blood Cells', 'Heart Rate', 
+                   'Non Invasive Blood Pressure systolic', 
+                   'Non Invasive Blood Pressure diastolic',
+                   'Respiratory Rate', 'Temperature Fahrenheit', 'Glucose') |>
+  #step_mutate(
+    #Glucose = replace_na(Glucose, median(Glucose, na.rm = TRUE)),
+    #role = "predictor") |>
+  step_dummy(all_nominal_predictors()) |>
+  # zero-variance filter
+  step_zv(all_predictors())
+  #step_normalize(all_numeric_predictors()) |>
+mimiciv_icu_cohort_recipe
+```
+
+```{r, eval=TRUE}
+set.seed(203)
+folds <- vfold_cv(mimiciv_icu_cohort_other, v = 5)
+```
+
+```{r, eval=TRUE}
+logit_mod <- 
+  logistic_reg(
+    penalty = tune(), 
+    mixture = tune()
+  ) |> 
+  set_engine("glmnet", standardize = TRUE)
+logit_mod
+```
+
+```{r, eval=TRUE}
+logit_wf <- workflow() |>
+  add_recipe(mimiciv_icu_cohort_recipe) |>
+  add_model(logit_mod)
+logit_wf
+```
+
+```{r, eval=TRUE}
+logit_grid <- grid_regular(
+  penalty(range = c(-6, 3)), 
+  mixture(),
+  levels = c(10, 5)
+  )
+
+logit_res <- 
+  tune_grid(
+    object = logit_wf, 
+    resamples = folds, 
+    grid = logit_grid,
+    control = control_stack_grid()
+  )
+logit_res
+```
+
+```{r, eval=TRUE}
+rf_mod <- 
+  rand_forest(
+    mode = "classification",
+    # Number of predictors randomly sampled in each split
+    mtry = tune(),
+    # Number of trees in ensemble
+    trees = tune()
+  ) |>
+  set_engine("ranger")
+rf_mod
+```
+
+```{r, eval=TRUE}
+rf_wf <- workflow() |>
+  add_recipe(mimiciv_icu_cohort_recipe) |>
+  add_model(rf_mod)
+rf_wf
+```
+
+```{r, eval=TRUE}
+rf_grid <- grid_random(
+  trees(range = c(120L, 140L)), 
+  mtry(range = c(2L, 3L)),
+  size = 5
+  )
+
+rf_res <- 
+  tune_grid(
+    object = rf_wf, 
+    resamples = folds, 
+    grid = rf_grid,
+    control = control_stack_grid()
+  )
+rf_res
+```
+
+```{r, eval=TRUE}
+gb_mod <- 
+  boost_tree(
+    mode = "classification",
+    trees = 10, 
+    tree_depth = tune(),
+    learn_rate = tune()
+  ) |> 
+  set_engine("xgboost")
+gb_mod
+```
+
+```{r, eval=TRUE}
+gb_wf <- workflow() |>
+  add_recipe(mimiciv_icu_cohort_recipe) |>
+  add_model(gb_mod)
+gb_wf
+```
+
+```{r, eval=TRUE}
+gb_grid <- grid_regular(
+  tree_depth(range = c(1L, 3L)),
+  learn_rate(range = c(-2, 1), trans = log10_trans()),
+  levels = c(3, 5)
+  )
+
+gb_res <- 
+  tune_grid(
+    object = gb_wf, 
+    resamples = folds, 
+    grid = gb_grid,
+    control = control_stack_grid()
+  )
+gb_res
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_st <- 
+  stacks() |>
+  add_candidates(logit_res) |>
+  add_candidates(rf_res) |>
+  add_candidates(gb_res) |>
+  blend_predictions(
+    penalty = 10^(-2:1),
+    #penalty = 10^(-6:2),
+    times = 1,
+    metrics = c("roc_auc")
+    ) |>
+  fit_members()
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_st
+```
+
+```{r, eval=TRUE}
+autoplot(mimiciv_icu_cohort_st)
+autoplot(mimiciv_icu_cohort_st, type = "members")
+autoplot(mimiciv_icu_cohort_st, type = "weights")
+```
+
+```{r, eval=TRUE}
+collect_parameters(mimiciv_icu_cohort_st, "rf_res")
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_pred <- mimiciv_icu_cohort_test %>%
+  bind_cols(predict(mimiciv_icu_cohort_st, ., type = "prob")) %>%
+  print(width = Inf)
+```
+
+```{r, eval=TRUE}
+colnames(mimiciv_icu_cohort_pred)
+```
+
+```{r, eval=TRUE}
+yardstick::roc_auc(
+  mimiciv_icu_cohort_pred,
+  truth = los_long,
+  contains(".pred_FALSE")
+  )
+```
+
+```{r, eval=TRUE}
+mimiciv_icu_cohort_pred <-
+  mimiciv_icu_cohort_test |>
+  select(los_long) |>
+  bind_cols(
+    predict(
+      mimiciv_icu_cohort_st,
+      mimiciv_icu_cohort_test,
+      type = "class",
+      members = TRUE
+      )
+    ) |>
+  print(width = Inf)
+```
+
+```{r, eval=TRUE}
+map(
+  colnames(mimiciv_icu_cohort_pred),
+  ~mean(mimiciv_icu_cohort_pred$los_long == pull(mimiciv_icu_cohort_pred, .x))
+  ) |>
+  set_names(colnames(mimiciv_icu_cohort_pred)) |>
+  as_tibble() |>
+  pivot_longer(c(everything(), -los_long))
+```
+
+
+
+**Answer**
+P4： When comparing the performance of the logistic regression with elastic net regularization, random forest, and boosting on the test set, we observe varying AUC (Area Under the ROC Curve) scores: 0.613, 0.651, and 0.653, respectively. It's intriguing to note the slight differences in AUC among these models, suggesting that while they all perform relatively well, boosting and random forest have a slight edge over logistic regression in distinguishing between long and short ICU stays.
+
+I also ventured into model stacking as a method to potentially enhance prediction accuracy. Due to constraints in memory, I had to reduce the number of trees and the levels within the models. This adjustment resulted in an AUC of 0.6519768 for the stacked model. It's worth mentioning that this score might not fully represent the stacking model's potential. I have a hunch that, without these limitations - meaning if we kept the original levels and didn't cut down on the trees - the stacked model's AUC could surpass the individual models.
+
+When it comes to identifying the most pivotal features in predicting lengthy ICU stays, traditionally, features like patient age, severity of illness scores, and initial lab measurements often play significant roles. In terms of performance and interpretation ability, it's a mixed bag. Logistic regression, though slightly lagging in AUC, shines with its interpret ability - it's easier to understand how each feature influences the prediction. Random forest and boosting, on the other hand, offer better performance but at the cost of being more complex and a bit harder to interpret.
+
+In conclusion, the slight trade-offs between performance and interpret ability are always an intriguing aspect of machine learning. And while the stacked model didn't achieve a higher AUC under the constrained conditions, I'm optimistic about its potential in a more resource-abundant setting.
+
+
+
+
+
