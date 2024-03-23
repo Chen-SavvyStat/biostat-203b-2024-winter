@@ -121,7 +121,7 @@ gb_recipe <-
 gb_mod <- 
   boost_tree(
     mode = "classification",
-    trees = 1000, 
+    trees = 100, 
     tree_depth = tune(),
     learn_rate = tune()
   ) |> 
@@ -157,19 +157,11 @@ gb_fit <- gb_wf |>
   tune_grid(
     resamples = folds,
     grid = param_grid,
-    metrics = metric_set(roc_auc, accuracy),
-    control = control_grid(save_pred = TRUE)
+    metrics = metric_set(roc_auc, accuracy)
     )
 gb_fit
 ```
 
-
-```{r, eval=TRUE}
-gb_pred <- gb_fit |>
-  collect_predictions()
-
-saveRDS(gb_pred, "gb_predictions.rds")
-```
 
 ```{r, eval=TRUE}
 gb_fit |>
@@ -184,12 +176,12 @@ gb_fit |>
 
 ```{r, eval=TRUE}
 gb_fit |>
-  show_best("roc_auc")
+  show_best(metric = "roc_auc")
 ```
 
 ```{r, eval=TRUE}
 best_gb <- gb_fit |>
-  select_best("roc_auc")
+  select_best(metric = "roc_auc")
 best_gb
 ```
 
